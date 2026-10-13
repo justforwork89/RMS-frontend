@@ -114,6 +114,14 @@ class _CourseFormViewState extends State<CourseFormView> {
                 ),
                 const SizedBox(height: 12),
                 _dropdown<String>(
+                  label: '전공',
+                  value: _viewModel.major,
+                  items: _viewModel.majors,
+                  text: (v) => v,
+                  onChanged: readOnly ? null : _viewModel.setMajor,
+                ),
+                const SizedBox(height: 12),
+                _dropdown<String>(
                   label: '담당 강사',
                   value: _viewModel.instructor,
                   items: _viewModel.instructors,
