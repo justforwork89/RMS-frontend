@@ -4,14 +4,43 @@ import '../models/enrollment.dart';
 import '../repositories/course_repository.dart';
 import '../repositories/enrollment_repository.dart';
 
-/// 메모리 기반 임시 수강신청 저장소. 신청/변경/취소 시 과정의 신청 인원도 함께 갱신한다.
+/// 메모리 기반 임시 수강신청 저장소. 신청/변경/취소/반려 시 과정의 신청 인원도 함께 갱신한다.
 /// (실제 백엔드에서는 트랜잭션으로 서버가 처리할 부분)
 class MockEnrollmentRepository implements EnrollmentRepository {
-  MockEnrollmentRepository(this._courses);
+  MockEnrollmentRepository(this._courses) {
+    _items.addAll([
+      Enrollment(
+        id: 1,
+        studentId: 'student1',
+        courseId: 1,
+        appliedAt: DateTime(2026, 9, 28),
+        status: EnrollStatus.approved,
+      ),
+      Enrollment(
+        id: 2,
+        studentId: 'student2',
+        courseId: 1,
+        appliedAt: DateTime(2026, 9, 29),
+        status: EnrollStatus.approved,
+      ),
+      Enrollment(
+        id: 3,
+        studentId: 'student3',
+        courseId: 5,
+        appliedAt: DateTime(2026, 10, 10),
+      ),
+      Enrollment(
+        id: 4,
+        studentId: 'student4',
+        courseId: 6,
+        appliedAt: DateTime(2026, 10, 11),
+      ),
+    ]);
+  }
 
   final CourseRepository _courses;
   final List<Enrollment> _items = [];
-  int _nextId = 1;
+  int _nextId = 5;
 
   Future<Course> _requireCourse(int courseId) async {
     final all = await _courses.fetchCourses();
@@ -57,6 +86,14 @@ class MockEnrollmentRepository implements EnrollmentRepository {
   }
 
   @override
+  Future<List<Enrollment>> fetchAll() async {
+    await _latency();
+    final all = List<Enrollment>.of(_items);
+    all.sort((a, b) => b.appliedAt.compareTo(a.appliedAt));
+    return all;
+  }
+
+  @override
   Future<Enrollment> enroll(String studentId, int courseId) async {
     await _latency();
     if (_alreadyEnrolled(studentId, courseId)) {
@@ -91,10 +128,13 @@ class MockEnrollmentRepository implements EnrollmentRepository {
     }
     _checkOpen(await _requireCourse(newCourseId));
     await _adjustEnrolled(newCourseId, 1);
-    await _adjustEnrolled(old.courseId, -1);
+    if (old.status != EnrollStatus.rejected) {
+      await _adjustEnrolled(old.courseId, -1);
+    }
     final updated = old.copyWith(
       courseId: newCourseId,
       appliedAt: DateTime.now(),
+      status: EnrollStatus.applied,
     );
     _items[index] = updated;
     return updated;
@@ -109,8 +149,29 @@ class MockEnrollmentRepository implements EnrollmentRepository {
     if (oldCourse.status != CourseStatus.recruiting) {
       throw const EnrollmentException('모집이 끝난 과정은 취소할 수 없습니다.');
     }
-    await _adjustEnrolled(old.courseId, -1);
+    if (old.status != EnrollStatus.rejected) {
+      await _adjustEnrolled(old.courseId, -1);
+    }
     _items.removeAt(index);
+  }
+
+  @override
+  Future<Enrollment> setStatus(int enrollmentId, EnrollStatus status) async {
+    await _latency();
+    final index = _indexOf(enrollmentId);
+    final old = _items[index];
+    if (status == EnrollStatus.applied) {
+      throw const EnrollmentException('승인 또는 반려만 선택할 수 있습니다.');
+    }
+    if (old.status != EnrollStatus.applied) {
+      throw const EnrollmentException('이미 처리된 신청입니다.');
+    }
+    if (status == EnrollStatus.rejected) {
+      await _adjustEnrolled(old.courseId, -1);
+    }
+    final updated = old.copyWith(status: status);
+    _items[index] = updated;
+    return updated;
   }
 
   Future<void> _latency() =>
