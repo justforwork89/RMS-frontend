@@ -1,13 +1,30 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend/main.dart';
-import 'package:frontend/repositories/course_repository.dart';
+import 'package:frontend/mock/mock_bootstrap.dart';
+
+Future<void> _login(WidgetTester tester, String id, String password) async {
+  await tester.enterText(find.byType(TextField).at(0), id);
+  await tester.enterText(find.byType(TextField).at(1), password);
+  await tester.tap(find.widgetWithText(FilledButton, '로그인'));
+  await tester.pumpAndSettle();
+}
 
 void main() {
-  testWidgets('과정 목록 화면이 샘플 과정을 보여준다', (tester) async {
-    await tester.pumpWidget(LmsApp(repository: InMemoryCourseRepository()));
-    await tester.pumpAndSettle();
+  testWidgets('학생 로그인 후 과목/교수 정보 화면이 열린다', (tester) async {
+    await tester.pumpWidget(LmsApp(dependencies: createMockDependencies()));
 
-    expect(find.text('과정 관리'), findsOneWidget);
-    expect(find.text('Flutter 모바일 앱 개발'), findsOneWidget);
+    await _login(tester, 'student1', '1234');
+
+    expect(find.text('과목/교수 정보'), findsWidgets);
+    expect(find.text('Spring Boot 백엔드 개발'), findsOneWidget);
+  });
+
+  testWidgets('잘못된 비밀번호면 로그인 화면에 머문다', (tester) async {
+    await tester.pumpWidget(LmsApp(dependencies: createMockDependencies()));
+
+    await _login(tester, 'student1', 'wrong');
+
+    expect(find.text('아이디 또는 비밀번호가 올바르지 않습니다.'), findsOneWidget);
   });
 }
