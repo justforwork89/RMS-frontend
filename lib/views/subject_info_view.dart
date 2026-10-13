@@ -12,9 +12,13 @@ class SubjectInfoView extends StatefulWidget {
     required this.repository,
     this.drawer,
     this.actions,
+    this.onTapCourse,
   });
 
   final CourseRepository repository;
+
+  /// 과목 카드를 눌렀을 때 호출 (과정 상세 화면 이동 등).
+  final void Function(Course course)? onTapCourse;
   final Widget? drawer;
   final List<Widget>? actions;
 
@@ -133,15 +137,21 @@ class _SubjectInfoViewState extends State<SubjectInfoView> {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       itemCount: courses.length,
       separatorBuilder: (_, __) => const SizedBox(height: 8),
-      itemBuilder: (context, i) => _SubjectCard(course: courses[i]),
+      itemBuilder: (context, i) => _SubjectCard(
+        course: courses[i],
+        onTap: widget.onTapCourse == null
+            ? null
+            : () => widget.onTapCourse!(courses[i]),
+      ),
     );
   }
 }
 
 class _SubjectCard extends StatelessWidget {
-  const _SubjectCard({required this.course});
+  const _SubjectCard({required this.course, this.onTap});
 
   final Course course;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -153,7 +163,10 @@ class _SubjectCard extends StatelessWidget {
         '명';
     return Card(
       margin: EdgeInsets.zero,
-      child: Padding(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,6 +197,7 @@ class _SubjectCard extends StatelessWidget {
             ],
           ],
         ),
+      ),
       ),
     );
   }
