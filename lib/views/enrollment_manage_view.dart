@@ -275,7 +275,12 @@ class _EnrollmentManageViewState extends State<EnrollmentManageView> {
           children: [
             _CourseSummary(course: item.course),
             const SizedBox(height: 4),
-            Text('신청일 ' + formatDate(item.enrollment.appliedAt)),
+            Text(
+                '신청일 ' +
+                    formatDate(item.enrollment.appliedAt) +
+                    '  |  상태 ' +
+                    item.enrollment.status.label,
+              ),
             const SizedBox(height: 8),
             if (item.editable)
               Row(
