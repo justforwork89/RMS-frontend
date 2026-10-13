@@ -1,16 +1,28 @@
 import 'package:flutter/material.dart';
 
 import '../app_dependencies.dart';
+import '../models/course.dart';
 import '../models/user.dart';
 import '../viewmodels/auth_viewmodel.dart';
+import 'assignment_list_view.dart';
+import 'common_code_view.dart';
+import 'course_detail_view.dart';
 import 'course_list_view.dart';
+import 'enrollment_approval_view.dart';
 import 'enrollment_manage_view.dart';
+import 'home_dashboard_view.dart';
 import 'subject_info_view.dart';
+import 'user_management_view.dart';
 
 enum _Menu {
+  home('홈', Icons.home_outlined),
   subjectInfo('과목/교수 정보', Icons.menu_book_outlined),
   enrollment('수강신청 관리', Icons.edit_calendar_outlined),
-  courseManage('과정 관리', Icons.school_outlined);
+  courseManage('과정 관리', Icons.school_outlined),
+  assignment('과제', Icons.assignment_outlined),
+  approval('수강 승인', Icons.how_to_reg_outlined),
+  userManage('사용자 관리', Icons.people_outline),
+  commonCode('공통코드 관리', Icons.tune);
 
   const _Menu(this.label, this.icon);
 
@@ -18,14 +30,32 @@ enum _Menu {
   final IconData icon;
 }
 
-/// 역할별로 노출할 메뉴. 학생: 과목/교수 정보, 수강신청 관리. 강사/관리자: 과정 관리.
+/// 역할별로 노출할 메뉴. 첫 번째 메뉴(홈)가 로그인 직후 화면이다.
 List<_Menu> _menusFor(UserRole role) {
   switch (role) {
     case UserRole.student:
-      return const [_Menu.subjectInfo, _Menu.enrollment];
+      return const [
+        _Menu.home,
+        _Menu.subjectInfo,
+        _Menu.enrollment,
+        _Menu.assignment,
+      ];
     case UserRole.instructor:
+      return const [
+        _Menu.home,
+        _Menu.subjectInfo,
+        _Menu.courseManage,
+        _Menu.assignment,
+      ];
     case UserRole.admin:
-      return const [_Menu.courseManage];
+      return const [
+        _Menu.home,
+        _Menu.subjectInfo,
+        _Menu.courseManage,
+        _Menu.approval,
+        _Menu.userManage,
+        _Menu.commonCode,
+      ];
   }
 }
 
@@ -49,10 +79,33 @@ class _HomeShellViewState extends State<HomeShellView> {
 
   AppUser get _user => widget.authViewModel.user!;
 
+  void _openCourse(Course course) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => CourseDetailView(
+          dependencies: widget.dependencies,
+          course: course,
+          user: _user,
+        ),
+      ),
+    );
+  }
+
+  /// 자체 Scaffold가 없는 화면을 앱바/메뉴와 함께 감싼다.
+  Widget _page(String title, Widget body, Widget drawer, List<Widget> actions) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title), actions: actions),
+      drawer: drawer,
+      body: body,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final menus = _menusFor(_user.role);
-    final current = _selected ?? menus.first;
+    final current = (_selected != null && menus.contains(_selected))
+        ? _selected!
+        : menus.first;
     final drawer = _AppDrawer(
       user: _user,
       menus: menus,
@@ -71,29 +124,69 @@ class _HomeShellViewState extends State<HomeShellView> {
         ),
       ),
     ];
+    final deps = widget.dependencies;
+    final key = ValueKey(current);
     switch (current) {
-      case _Menu.subjectInfo:
-        return SubjectInfoView(
-          key: ValueKey(current),
-          repository: widget.dependencies.courses,
+      case _Menu.home:
+        return HomeDashboardView(
+          key: key,
+          dependencies: deps,
+          user: _user,
           drawer: drawer,
           actions: actions,
         );
+      case _Menu.subjectInfo:
+        return SubjectInfoView(
+          key: key,
+          repository: deps.courses,
+          drawer: drawer,
+          actions: actions,
+          onTapCourse: _openCourse,
+        );
       case _Menu.enrollment:
         return EnrollmentManageView(
-          key: ValueKey(current),
-          enrollments: widget.dependencies.enrollments,
-          courses: widget.dependencies.courses,
+          key: key,
+          enrollments: deps.enrollments,
+          courses: deps.courses,
           student: _user,
           drawer: drawer,
           actions: actions,
         );
       case _Menu.courseManage:
         return CourseListView(
-          key: ValueKey(current),
-          repository: widget.dependencies.courses,
+          key: key,
+          repository: deps.courses,
           drawer: drawer,
           actions: actions,
+        );
+      case _Menu.assignment:
+        return AssignmentListView(
+          key: key,
+          dependencies: deps,
+          user: _user,
+          drawer: drawer,
+          actions: actions,
+        );
+      case _Menu.approval:
+        return _page(
+          current.label,
+          EnrollmentApprovalView(key: key, dependencies: deps),
+          drawer,
+          actions,
+        );
+      case _Menu.userManage:
+        return _page(
+          current.label,
+          UserManagementView(key: key, dependencies: deps),
+          drawer,
+          actions,
+        );
+      case _Menu.commonCode:
+        return _page(
+          current.label,
+          CommonCodeView(key: key, dependencies: deps),
+          drawer,
+          actions,
         );
     }
   }
