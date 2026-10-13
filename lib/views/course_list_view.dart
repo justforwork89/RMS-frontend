@@ -4,12 +4,20 @@ import '../models/course.dart';
 import '../repositories/course_repository.dart';
 import '../viewmodels/course_list_viewmodel.dart';
 import 'course_form_view.dart';
+import 'course_status_chip.dart';
 
 /// 과정 관리 - 목록/조회 화면 (LMS-C003). 상태·로직은 ViewModel이 담당한다.
 class CourseListView extends StatefulWidget {
-  const CourseListView({super.key, required this.repository});
+  const CourseListView({
+    super.key,
+    required this.repository,
+    this.drawer,
+    this.actions,
+  });
 
   final CourseRepository repository;
+  final Widget? drawer;
+  final List<Widget>? actions;
 
   @override
   State<CourseListView> createState() => _CourseListViewState();
@@ -75,7 +83,11 @@ class _CourseListViewState extends State<CourseListView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('과정 관리')),
+      appBar: AppBar(
+        title: const Text('과정 관리'),
+        actions: widget.actions,
+      ),
+      drawer: widget.drawer,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(),
         icon: const Icon(Icons.add),
@@ -220,7 +232,7 @@ class _CourseCard extends StatelessWidget {
                   ],
                 ),
               ),
-              _StatusChip(status: course.status),
+              CourseStatusChip(status: course.status),
               IconButton(
                 tooltip: '삭제',
                 icon: const Icon(Icons.delete_outline),
@@ -229,40 +241,6 @@ class _CourseCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _StatusChip extends StatelessWidget {
-  const _StatusChip({required this.status});
-
-  final CourseStatus status;
-
-  Color get _color {
-    switch (status) {
-      case CourseStatus.preparing:
-        return Colors.grey;
-      case CourseStatus.recruiting:
-        return Colors.blue;
-      case CourseStatus.inProgress:
-        return Colors.green;
-      case CourseStatus.closed:
-        return Colors.brown;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        border: Border.all(color: _color),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        status.label,
-        style: TextStyle(color: _color, fontWeight: FontWeight.w600),
       ),
     );
   }
