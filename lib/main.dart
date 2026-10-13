@@ -1,17 +1,33 @@
 import 'package:flutter/material.dart';
 
-import 'repositories/course_repository.dart';
-import 'views/course_list_view.dart';
+import 'app_dependencies.dart';
+import 'mock/mock_bootstrap.dart';
+import 'viewmodels/auth_viewmodel.dart';
+import 'views/home_shell_view.dart';
+import 'views/login_view.dart';
 
 void main() {
-  // 백엔드(Spring Boot) 연동 전까지는 메모리 목 저장소를 사용한다.
-  runApp(LmsApp(repository: InMemoryCourseRepository()));
+  // [MOCK] 백엔드 연동 시 이 한 줄을 실제 구현 주입으로 교체하고 lib/mock 폴더를 삭제한다.
+  runApp(LmsApp(dependencies: createMockDependencies()));
 }
 
-class LmsApp extends StatelessWidget {
-  const LmsApp({super.key, required this.repository});
+class LmsApp extends StatefulWidget {
+  const LmsApp({super.key, required this.dependencies});
 
-  final CourseRepository repository;
+  final AppDependencies dependencies;
+
+  @override
+  State<LmsApp> createState() => _LmsAppState();
+}
+
+class _LmsAppState extends State<LmsApp> {
+  late final AuthViewModel _auth = AuthViewModel(widget.dependencies.auth);
+
+  @override
+  void dispose() {
+    _auth.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +38,19 @@ class LmsApp extends StatelessWidget {
         colorSchemeSeed: const Color(0xFF2F5BEA),
         useMaterial3: true,
       ),
-      home: CourseListView(repository: repository),
+      // 로그인 여부에 따라 로그인 화면 / 메인 화면으로 전환된다.
+      home: ListenableBuilder(
+        listenable: _auth,
+        builder: (context, _) {
+          final user = _auth.user;
+          if (user == null) return LoginView(viewModel: _auth);
+          return HomeShellView(
+            key: ValueKey(user.id),
+            dependencies: widget.dependencies,
+            authViewModel: _auth,
+          );
+        },
+      ),
     );
   }
 }
