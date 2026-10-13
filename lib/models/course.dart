@@ -1,4 +1,4 @@
-/// 과정 상태 (LMS-C003). 준비중 → 모집중 → 진행중 → 종료 순서로만 전이 가능.
+/// 과정(=과목) 상태 (LMS-C003). 준비중 → 모집중 → 진행중 → 종료 순서로만 전이 가능.
 enum CourseStatus {
   preparing('준비중'),
   recruiting('모집중'),
@@ -13,13 +13,14 @@ enum CourseStatus {
   bool canChangeTo(CourseStatus next) => next.index == index + 1;
 }
 
-/// 과정 Model (TB_COURSE).
+/// 과정(과목) Model (TB_COURSE).
 class Course {
   const Course({
     this.id,
     required this.name,
     this.description = '',
     required this.instructor,
+    this.major = '공통',
     required this.startDate,
     required this.endDate,
     required this.capacity,
@@ -31,17 +32,23 @@ class Course {
   final String name;
   final String description;
   final String instructor;
+
+  /// 전공 구분 (과목/교수 정보 조회 조건).
+  final String major;
   final DateTime startDate;
   final DateTime endDate;
   final int capacity;
   final int enrolled;
   final CourseStatus status;
 
+  bool get isFull => enrolled >= capacity;
+
   Course copyWith({
     int? id,
     String? name,
     String? description,
     String? instructor,
+    String? major,
     DateTime? startDate,
     DateTime? endDate,
     int? capacity,
@@ -53,6 +60,7 @@ class Course {
       name: name ?? this.name,
       description: description ?? this.description,
       instructor: instructor ?? this.instructor,
+      major: major ?? this.major,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       capacity: capacity ?? this.capacity,
