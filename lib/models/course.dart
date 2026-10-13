@@ -1,9 +1,11 @@
 /// 과정(=과목) 상태 (LMS-C003). 준비중 → 모집중 → 진행중 → 종료 순서로만 전이 가능.
+/// 폐강 추가됨
 enum CourseStatus {
   preparing('준비중'),
   recruiting('모집중'),
   inProgress('진행중'),
-  closed('종료');
+  closed('종료'),
+  cancelled('폐강');
 
   const CourseStatus(this.label);
 

@@ -18,6 +18,8 @@ class CourseStatusChip extends StatelessWidget {
         return Colors.green;
       case CourseStatus.closed:
         return Colors.brown;
+      case CourseStatus.cancelled:
+        return Colors.red;
     }
   }
 

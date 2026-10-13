@@ -34,6 +34,12 @@ class MockCommonCodeRepository implements CommonCodeRepository {
       sortOrder: 4,
     ),
     const CommonCode(
+      groupCd: 'COURSE_STATUS',
+      code: '50',
+      codeName: '폐강',
+      sortOrder: 5,
+    ),
+    const CommonCode(
       groupCd: 'ENROLL_STATUS',
       code: '10',
       codeName: '신청',

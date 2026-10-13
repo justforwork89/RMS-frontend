@@ -58,9 +58,9 @@ class _AssignmentListViewState extends State<AssignmentListView> {
             student: widget.user,
             existing: item.submission,
           );
-    await Navigator.of(context).push<bool>(
-      MaterialPageRoute<bool>(builder: (_) => page),
-    );
+    await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute<bool>(builder: (_) => page));
     await _viewModel.load();
   }
 
@@ -131,10 +131,10 @@ class _AssignmentListViewState extends State<AssignmentListView> {
     final due = '마감 ' + formatDate(item.assignment.dueDate);
     final status = _viewModel.isInstructor
         ? '제출 ' +
-            item.submittedCount.toString() +
-            '건 / 채점 ' +
-            item.gradedCount.toString() +
-            '건'
+              item.submittedCount.toString() +
+              '건 / 채점 ' +
+              item.gradedCount.toString() +
+              '건'
         : item.studentStatus;
     return Card(
       margin: EdgeInsets.zero,
@@ -190,7 +190,9 @@ class _NewAssignmentDialogState extends State<_NewAssignmentDialog> {
       lastDate: DateTime(now.year + 2),
     );
     if (picked == null) return;
-    setState(() => _due = DateTime(picked.year, picked.month, picked.day, 23, 59));
+    setState(
+      () => _due = DateTime(picked.year, picked.month, picked.day, 23, 59),
+    );
   }
 
   void _submit() {
@@ -203,9 +205,9 @@ class _NewAssignmentDialogState extends State<_NewAssignmentDialog> {
       setState(() => _error = '마감일을 선택하세요.');
       return;
     }
-    Navigator.of(context).pop(
-      _NewAssignment(_course, _title.text.trim(), _content.text, due),
-    );
+    Navigator.of(
+      context,
+    ).pop(_NewAssignment(_course, _title.text.trim(), _content.text, due));
   }
 
   @override
