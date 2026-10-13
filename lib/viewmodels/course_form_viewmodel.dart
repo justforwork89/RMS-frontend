@@ -8,6 +8,7 @@ class CourseFormViewModel extends ChangeNotifier {
   CourseFormViewModel(this._repository, {Course? course}) : _original = course {
     final c = course;
     instructor = c?.instructor ?? _repository.instructors.first;
+    major = c?.major ?? _repository.majors.first;
     if (c != null) {
       name = c.name;
       description = c.description;
@@ -24,6 +25,7 @@ class CourseFormViewModel extends ChangeNotifier {
   String name = '';
   String description = '';
   late String instructor;
+  late String major;
   DateTime? startDate;
   DateTime? endDate;
   String capacityText = '';
@@ -40,6 +42,7 @@ class CourseFormViewModel extends ChangeNotifier {
   bool get saving => _saving;
   String? get errorMessage => _errorMessage;
   List<String> get instructors => _repository.instructors;
+  List<String> get majors => _repository.majors;
 
   /// 현재 상태 + 다음 단계만 선택 가능 (역방향 불가).
   List<CourseStatus> get selectableStatuses {
@@ -51,6 +54,11 @@ class CourseFormViewModel extends ChangeNotifier {
 
   void setInstructor(String value) {
     instructor = value;
+    notifyListeners();
+  }
+
+  void setMajor(String value) {
+    major = value;
     notifyListeners();
   }
 
@@ -126,6 +134,7 @@ class CourseFormViewModel extends ChangeNotifier {
           name: name.trim(),
           description: description,
           instructor: instructor,
+          major: major,
           startDate: startDate!,
           endDate: endDate!,
           capacity: int.parse(capacityText.trim()),
