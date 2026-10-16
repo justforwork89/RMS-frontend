@@ -1,0 +1,105 @@
+import '../models/course.dart';
+import '../repositories/course_repository.dart';
+import 'api_client.dart';
+
+/// 과정 상태 ↔ 서버 코드 (TB_COMMON_CODE: COURSE_STATUS).
+const _statusCodes = <CourseStatus, String>{
+  CourseStatus.preparing: '10',
+  CourseStatus.recruiting: '20',
+  CourseStatus.inProgress: '30',
+  CourseStatus.closed: '40',
+  CourseStatus.cancelled: '50',
+};
+
+CourseStatus _statusFromCode(String code) {
+  for (final e in _statusCodes.entries) {
+    if (e.value == code) return e.key;
+  }
+  return CourseStatus.preparing;
+}
+
+class ApiCourseRepository implements CourseRepository {
+  ApiCourseRepository(this._api);
+
+  final ApiClient _api;
+  List<({String id, String name})> _instructors = const [];
+
+  @override
+  List<String> get instructors => [for (final i in _instructors) i.name];
+
+  // TODO: 전공 코드 API가 생기면 교체
+  @override
+  List<String> get majors => const ['컴퓨터공학', '정보보안', '데이터분석'];
+
+  /// 로그인 직후 호출해 강사 선택지를 채운다.
+  Future<void> loadInstructors() async {
+    final data = await _api.call('GET', '/api/instructors') as List<dynamic>;
+    _instructors = [
+      for (final e in data)
+        (
+          id: (e as Map<String, dynamic>)['id'] as String,
+          name: e['name'] as String,
+        ),
+    ];
+  }
+
+  @override
+  Future<List<Course>> fetchCourses({
+    String keyword = '',
+    CourseStatus? status,
+  }) async {
+    final query = <String, String>{
+      if (keyword.trim().isNotEmpty) 'keyword': keyword.trim(),
+      if (status != null) 'status': _statusCodes[status]!,
+    };
+    final path = Uri(
+      path: '/api/courses',
+      queryParameters: query.isEmpty ? null : query,
+    ).toString();
+    final data = await _api.call('GET', path) as List<dynamic>;
+    return [for (final e in data) _fromJson(e as Map<String, dynamic>)];
+  }
+
+  @override
+  Future<Course> save(Course course) async {
+    String? instructorId;
+    for (final i in _instructors) {
+      if (i.name == course.instructor) instructorId = i.id;
+    }
+    final body = {
+      'courseName': course.name,
+      'description': course.description,
+      'instructorId': instructorId,
+      'major': course.major,
+      'startDate': formatDate(course.startDate),
+      'endDate': formatDate(course.endDate),
+      'capacity': course.capacity,
+      'statusCd': _statusCodes[course.status],
+    };
+    final id = course.id;
+    final data = id == null
+        ? await _api.call('POST', '/api/courses', body: body)
+        : await _api.call('PUT', '/api/courses/$id', body: body);
+    return _fromJson(data as Map<String, dynamic>);
+  }
+
+  @override
+  Future<void> delete(int id) async {
+    await _api.call('DELETE', '/api/courses/$id');
+  }
+
+  Course _fromJson(Map<String, dynamic> j) {
+    return Course(
+      id: (j['id'] as num).toInt(),
+      name: j['name'] as String,
+      description: (j['description'] as String?) ?? '',
+      instructor: j['instructorName'] as String,
+      major: j['major'] as String,
+      startDate: DateTime.parse(j['startDate'] as String),
+      endDate: DateTime.parse(j['endDate'] as String),
+      capacity: (j['capacity'] as num).toInt(),
+      enrolled: (j['enrolledCount'] as num).toInt(),
+      status: _statusFromCode(j['statusCode'] as String),
+    );
+  }
+}

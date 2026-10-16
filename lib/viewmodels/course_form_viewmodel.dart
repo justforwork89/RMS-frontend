@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../models/course.dart';
 import '../repositories/course_repository.dart';
+import '../repositories/business_exception.dart';
 
 /// 과정 등록/수정 화면의 ViewModel. 입력값 보관, 검증, 저장을 담당한다.
 class CourseFormViewModel extends ChangeNotifier {
@@ -145,6 +146,11 @@ class CourseFormViewModel extends ChangeNotifier {
       _saving = false;
       notifyListeners();
       return true;
+    } on BusinessException catch (e) {
+      _saving = false;
+      _errorMessage = e.message;
+      notifyListeners();
+      return false;
     } catch (_) {
       _saving = false;
       _errorMessage = '저장 중 오류가 발생했습니다.';

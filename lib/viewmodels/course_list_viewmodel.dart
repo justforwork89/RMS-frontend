@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../models/course.dart';
 import '../repositories/course_repository.dart';
+import '../repositories/business_exception.dart';
 
 /// 과정 목록 화면(LMS-C003)의 ViewModel.
 /// 조회 조건(과정명/상태)과 목록 상태를 보관하고 View는 이를 구독만 한다.
@@ -57,6 +58,8 @@ class CourseListViewModel extends ChangeNotifier {
     }
     try {
       await _repository.delete(id);
+    } on BusinessException catch (e) {
+      return e.message;
     } catch (_) {
       return '삭제 중 오류가 발생했습니다.';
     }
