@@ -48,6 +48,8 @@ class ApiClient {
           res = await http.post(uri, headers: headers, body: encoded);
         case 'PUT':
           res = await http.put(uri, headers: headers, body: encoded);
+        case 'PATCH':
+          res = await http.patch(uri, headers: headers, body: encoded);
         case 'DELETE':
           res = await http.delete(uri, headers: headers);
         default:

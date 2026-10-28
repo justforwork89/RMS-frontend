@@ -5,6 +5,7 @@ import '../models/enrollment.dart';
 import '../models/user.dart';
 import '../repositories/course_repository.dart';
 import '../repositories/enrollment_repository.dart';
+import '../repositories/business_exception.dart';
 
 /// 내 수강신청 한 건 + 해당 과정 정보.
 class EnrollmentItem {
@@ -68,8 +69,9 @@ class EnrollmentViewModel extends ChangeNotifier {
           if (byId[e.courseId] != null) EnrollmentItem(e, byId[e.courseId]!),
       ];
       _enrolledIds = mine.map((e) => e.courseId).toSet();
-      _recruiting =
-          courses.where((c) => c.status == CourseStatus.recruiting).toList();
+      _recruiting = courses
+          .where((c) => c.status == CourseStatus.recruiting)
+          .toList();
     } catch (_) {
       _errorMessage = '수강신청 정보를 불러오지 못했습니다.';
     }
@@ -91,7 +93,7 @@ class EnrollmentViewModel extends ChangeNotifier {
     String? error;
     try {
       await action();
-    } on EnrollmentException catch (e) {
+    } on BusinessException catch (e) {
       error = e.message;
     } catch (_) {
       error = '처리 중 오류가 발생했습니다.';

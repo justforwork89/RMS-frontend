@@ -2,7 +2,7 @@ import '../app_dependencies.dart';
 import '../mock/mock_assignment_repository.dart';
 import '../mock/mock_common_code_repository.dart';
 import '../mock/mock_course_repository.dart';
-import '../mock/mock_enrollment_repository.dart';
+import 'api_enrollment_repository.dart';
 import 'api_auth_repository.dart';
 import 'api_client.dart';
 import 'api_course_repository.dart';
@@ -17,7 +17,7 @@ AppDependencies createApiDependencies() {
     auth: ApiAuthRepository(api, onLoggedIn: courses.loadInstructors),
     users: ApiUserRepository(api),
     courses: courses,
-    enrollments: MockEnrollmentRepository(courses),
+    enrollments: ApiEnrollmentRepository(api),
     assignments: MockAssignmentRepository(),
     commonCodes: MockCommonCodeRepository(),
   );
