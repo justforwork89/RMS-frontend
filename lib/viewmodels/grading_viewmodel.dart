@@ -36,11 +36,10 @@ class GradingViewModel extends ChangeNotifier with ActionRunner {
       final subs = await _deps.assignments.fetchSubmissions(
         assignmentId: assignment.id,
       );
-      final users = await _deps.users.fetchUsers();
-      final names = <String, String>{for (final u in users) u.id: u.name};
-      _items = [
-        for (final s in subs) GradingItem(s, names[s.studentId] ?? s.studentId),
-      ];
+      // final users = await _deps.users.fetchUsers();
+      // final names = <String, String>{for (final u in users) u.id: u.name};
+      _items = [for (final s in subs) GradingItem(s, s.studentName)];
+      ;
     } catch (_) {
       _errorMessage = '제출물을 불러오지 못했습니다.';
     }

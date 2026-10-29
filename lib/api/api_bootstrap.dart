@@ -1,5 +1,5 @@
 import '../app_dependencies.dart';
-import '../mock/mock_assignment_repository.dart';
+import 'api_assignment_repository.dart';
 import '../mock/mock_common_code_repository.dart';
 import '../mock/mock_course_repository.dart';
 import 'api_enrollment_repository.dart';
@@ -18,7 +18,7 @@ AppDependencies createApiDependencies() {
     users: ApiUserRepository(api),
     courses: courses,
     enrollments: ApiEnrollmentRepository(api),
-    assignments: MockAssignmentRepository(),
+    assignments: ApiAssignmentRepository(api),
     commonCodes: MockCommonCodeRepository(),
   );
 }

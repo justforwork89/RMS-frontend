@@ -28,6 +28,7 @@ class Submission {
     required this.submittedAt,
     this.score,
     this.feedback = '',
+    this.studentName = '',
   });
 
   final int id;
@@ -42,6 +43,8 @@ class Submission {
   /// 점수 (0~100). null이면 채점 전.
   final int? score;
   final String feedback;
+
+  final String studentName;
 
   bool get graded => score != null;
 
@@ -61,6 +64,7 @@ class Submission {
       submittedAt: submittedAt ?? this.submittedAt,
       score: score ?? this.score,
       feedback: feedback ?? this.feedback,
+      studentName: studentName,
     );
   }
 }
