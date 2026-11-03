@@ -2,15 +2,9 @@ import '../models/enrollment.dart';
 import '../repositories/enrollment_repository.dart';
 import 'api_client.dart';
 
-const _statusCodes = <EnrollStatus, String>{
-  EnrollStatus.applied: '10',
-  EnrollStatus.approved: '20',
-  EnrollStatus.rejected: '30',
-};
-
 EnrollStatus _statusFromCode(String code) {
-  for (final e in _statusCodes.entries) {
-    if (e.value == code) return e.key;
+  for (final e in EnrollStatus.values) {
+    if (e.code == code) return e;
   }
   return EnrollStatus.applied;
 }
@@ -61,7 +55,7 @@ class ApiEnrollmentRepository implements EnrollmentRepository {
     final data = await _api.call(
       'PATCH',
       '/api/enrollments/$enrollmentId/status',
-      body: {'statusCd': _statusCodes[status]},
+      body: {'statusCd': status.code},
     );
     return _fromJson(data as Map<String, dynamic>);
   }

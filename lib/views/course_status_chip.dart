@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../models/code_group.dart';
 import '../models/course.dart';
+import '../viewmodels/common_code_names_viewmodel.dart';
 
 /// 과정 상태 뱃지 (여러 화면 공용).
 class CourseStatusChip extends StatelessWidget {
@@ -32,7 +34,9 @@ class CourseStatusChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
-        status.label,
+        CodeNamesScope.of(
+          context,
+        ).name(CodeGroup.courseStatus, status.code, status.label),
         style: TextStyle(color: _color, fontWeight: FontWeight.w600),
       ),
     );

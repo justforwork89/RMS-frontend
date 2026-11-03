@@ -2,18 +2,9 @@ import '../models/course.dart';
 import '../repositories/course_repository.dart';
 import 'api_client.dart';
 
-/// 과정 상태 ↔ 서버 코드 (TB_COMMON_CODE: COURSE_STATUS).
-const _statusCodes = <CourseStatus, String>{
-  CourseStatus.preparing: '10',
-  CourseStatus.recruiting: '20',
-  CourseStatus.inProgress: '30',
-  CourseStatus.closed: '40',
-  CourseStatus.cancelled: '50',
-};
-
 CourseStatus _statusFromCode(String code) {
-  for (final e in _statusCodes.entries) {
-    if (e.value == code) return e.key;
+  for (final e in CourseStatus.values) {
+    if (e.code == code) return e;
   }
   return CourseStatus.preparing;
 }
@@ -50,7 +41,7 @@ class ApiCourseRepository implements CourseRepository {
   }) async {
     final query = <String, String>{
       if (keyword.trim().isNotEmpty) 'keyword': keyword.trim(),
-      if (status != null) 'status': _statusCodes[status]!,
+      if (status != null) 'status': status.code,
     };
     final path = Uri(
       path: '/api/courses',
@@ -74,7 +65,7 @@ class ApiCourseRepository implements CourseRepository {
       'startDate': formatDate(course.startDate),
       'endDate': formatDate(course.endDate),
       'capacity': course.capacity,
-      'statusCd': _statusCodes[course.status],
+      'statusCd': course.status.code,
     };
     final id = course.id;
     final data = id == null

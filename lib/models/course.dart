@@ -1,15 +1,16 @@
 /// 과정(=과목) 상태 (LMS-C003). 준비중 → 모집중 → 진행중 → 종료 순서로만 전이 가능.
 /// 폐강 추가됨
 enum CourseStatus {
-  preparing('준비중'),
-  recruiting('모집중'),
-  inProgress('진행중'),
-  closed('종료'),
-  cancelled('폐강');
+  preparing('준비중', '10'),
+  recruiting('모집중', '20'),
+  inProgress('진행중', '30'),
+  closed('종료', '40'),
+  cancelled('폐강', '50');
 
-  const CourseStatus(this.label);
+  const CourseStatus(this.label, this.code);
 
   final String label;
+  final String code;
 
   /// 정방향(다음 단계)으로만 변경할 수 있다.
   bool canChangeTo(CourseStatus next) => next.index == index + 1;

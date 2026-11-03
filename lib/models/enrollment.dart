@@ -1,12 +1,13 @@
 /// 수강신청 처리 상태. 학생이 신청하면 [applied], 관리자가 승인/반려한다.
 enum EnrollStatus {
-  applied('신청'),
-  approved('승인'),
-  rejected('반려');
+  applied('신청', '10'),
+  approved('승인', '20'),
+  rejected('반려', '30');
 
-  const EnrollStatus(this.label);
+  const EnrollStatus(this.label, this.code);
 
   final String label;
+  final String code;
 }
 
 /// 수강신청 Model (TB_ENROLL). 학생(studentId)이 과정(courseId)을 신청한 이력.

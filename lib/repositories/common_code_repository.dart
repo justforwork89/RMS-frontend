@@ -4,6 +4,7 @@ import '../models/common_code.dart';
 /// (임시 구현: lib/mock/mock_common_code_repository.dart)
 abstract class CommonCodeRepository {
   Future<List<CommonCode>> fetchAll();
+  Future<List<CommonCode>> fetchByGroup(String groupCd);
 
   /// isNew이면 등록(키 중복 시 [BusinessException]), 아니면 수정.
   Future<void> save(CommonCode code, {required bool isNew});

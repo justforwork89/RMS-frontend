@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../models/code_group.dart';
 import '../models/course.dart';
 import '../models/user.dart';
 import '../repositories/course_repository.dart';
 import '../repositories/enrollment_repository.dart';
+import '../viewmodels/common_code_names_viewmodel.dart';
 import '../viewmodels/enrollment_viewmodel.dart';
 import 'course_status_chip.dart';
 
@@ -48,9 +50,9 @@ class _EnrollmentManageViewState extends State<EnrollmentManageView> {
   }
 
   void _toast(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<bool> _confirm(String title, String message, String okLabel) async {
@@ -149,16 +151,16 @@ class _EnrollmentManageViewState extends State<EnrollmentManageView> {
               bottom: TabBar(
                 tabs: [
                   const Tab(text: '수강신청'),
-                  Tab(text: '신청 내역 (' + _viewModel.items.length.toString() + ')'),
+                  Tab(
+                    text: '신청 내역 (' + _viewModel.items.length.toString() + ')',
+                  ),
                 ],
               ),
             ),
             drawer: widget.drawer,
             body: _viewModel.errorMessage != null
                 ? Center(child: Text(_viewModel.errorMessage!))
-                : TabBarView(
-                    children: [_buildApplyTab(), _buildHistoryTab()],
-                  ),
+                : TabBarView(children: [_buildApplyTab(), _buildHistoryTab()]),
           ),
         );
       },
@@ -253,8 +255,10 @@ class _EnrollmentManageViewState extends State<EnrollmentManageView> {
     final items = _viewModel.items;
     if (items.isEmpty) {
       return const Center(
-        child: Text('신청 내역이 없습니다.\n"수강신청" 탭에서 과정을 신청하세요.',
-            textAlign: TextAlign.center),
+        child: Text(
+          '신청 내역이 없습니다.\n"수강신청" 탭에서 과정을 신청하세요.',
+          textAlign: TextAlign.center,
+        ),
       );
     }
     return ListView.separated(
@@ -276,11 +280,15 @@ class _EnrollmentManageViewState extends State<EnrollmentManageView> {
             _CourseSummary(course: item.course),
             const SizedBox(height: 4),
             Text(
-                '신청일 ' +
-                    formatDate(item.enrollment.appliedAt) +
-                    '  |  상태 ' +
+              '신청일 ' +
+                  formatDate(item.enrollment.appliedAt) +
+                  '  |  상태 ' +
+                  CodeNamesScope.of(context).name(
+                    CodeGroup.enrollStatus,
+                    item.enrollment.status.code,
                     item.enrollment.status.label,
-              ),
+                  ),
+            ),
             const SizedBox(height: 8),
             if (item.editable)
               Row(
@@ -317,10 +325,8 @@ class _CourseSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final period =
         formatDate(course.startDate) + ' ~ ' + formatDate(course.endDate);
-    final headcount = course.enrolled.toString() +
-        ' / ' +
-        course.capacity.toString() +
-        '명';
+    final headcount =
+        course.enrolled.toString() + ' / ' + course.capacity.toString() + '명';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

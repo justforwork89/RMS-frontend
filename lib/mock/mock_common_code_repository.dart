@@ -116,4 +116,10 @@ class MockCommonCodeRepository implements CommonCodeRepository {
 
   Future<void> _latency() =>
       Future<void>.delayed(const Duration(milliseconds: 150));
+
+  @override
+  Future<List<CommonCode>> fetchByGroup(String groupCd) async {
+    await _latency();
+    return _items.where((c) => c.groupCd == groupCd).toList();
+  }
 }

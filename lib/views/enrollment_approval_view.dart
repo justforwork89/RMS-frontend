@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../app_dependencies.dart';
+import '../models/code_group.dart';
 import '../models/course.dart';
 import '../models/enrollment.dart';
+import '../viewmodels/common_code_names_viewmodel.dart';
 import '../viewmodels/enrollment_approval_viewmodel.dart';
 import 'dialogs.dart';
 
@@ -32,11 +34,20 @@ class _EnrollmentApprovalViewState extends State<EnrollmentApprovalView> {
   }
 
   Future<void> _decide(ApprovalItem item, EnrollStatus status) async {
+    final statusLable = CodeNamesScope.of(
+      context,
+    ).name(CodeGroup.enrollStatus, status.code, status.label);
     final ok = await showConfirmDialog(
       context,
-      title: '수강 ' + status.label,
-      message: item.studentName + ' 학생의 "' + item.courseName + '" 신청을 ' + status.label + ' 처리할까요?',
-      okLabel: status.label,
+      title: '수강 ' + statusLable,
+      message:
+          item.studentName +
+          ' 학생의 "' +
+          item.courseName +
+          '" 신청을 ' +
+          statusLable +
+          ' 처리할까요?',
+      okLabel: statusLable,
     );
     if (!ok) return;
     final error = await _viewModel.decide(item, status);
@@ -114,7 +125,16 @@ class _EnrollmentApprovalViewState extends State<EnrollmentApprovalView> {
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   const SizedBox(height: 4),
-                  Text('신청일 ' + formatDate(e.appliedAt) + '  |  상태 ' + e.status.label),
+                  Text(
+                    '신청일 ' +
+                        formatDate(e.appliedAt) +
+                        '  |  상태 ' +
+                        CodeNamesScope.of(context).name(
+                          CodeGroup.enrollStatus,
+                          e.status.code,
+                          e.status.label,
+                        ),
+                  ),
                 ],
               ),
             ),
