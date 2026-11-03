@@ -45,6 +45,7 @@ class _CommonCodeViewState extends State<CommonCodeView> {
       CodeNamesScope.of(context).load(widget.dependencies.commonCodes, [
         CodeGroup.courseStatus,
         CodeGroup.enrollStatus,
+        CodeGroup.role,
       ]);
     }
     showToast(context, error ?? '저장되었습니다.');
@@ -70,6 +71,7 @@ class _CommonCodeViewState extends State<CommonCodeView> {
       CodeNamesScope.of(context).load(widget.dependencies.commonCodes, [
         CodeGroup.courseStatus,
         CodeGroup.enrollStatus,
+        CodeGroup.role,
       ]);
     }
     showToast(context, error ?? '삭제되었습니다.');

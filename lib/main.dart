@@ -43,6 +43,7 @@ class _LmsAppState extends State<LmsApp> {
         _names.load(widget.dependencies.commonCodes, [
           CodeGroup.courseStatus,
           CodeGroup.enrollStatus,
+          CodeGroup.role,
         ]);
       }
     });

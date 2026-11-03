@@ -65,6 +65,7 @@ class ApiCommonCodeRepository implements CommonCodeRepository {
       groupCd: j['groupCd'] as String,
       code: j['code'] as String,
       codeName: j['codeName'] as String,
+      sortOrder: (j['sortOrder'] as num?)?.toInt() ?? 0,
     );
   }
 }

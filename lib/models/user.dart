@@ -1,12 +1,13 @@
 /// 로그인 사용자 역할.
 enum UserRole {
-  student('학생'),
-  instructor('강사'),
-  admin('관리자');
+  student('학생', 'S'),
+  instructor('강사', 'T'),
+  admin('관리자', 'A');
 
-  const UserRole(this.label);
+  const UserRole(this.label, this.code);
 
   final String label;
+  final String code;
 }
 
 /// 로그인한 사용자 Model (TB_USER).

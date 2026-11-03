@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../app_dependencies.dart';
+import '../models/code_group.dart';
 import '../models/user.dart';
+import '../viewmodels/common_code_names_viewmodel.dart';
 import '../viewmodels/user_management_viewmodel.dart';
 import 'dialogs.dart';
 
@@ -71,7 +73,11 @@ class _UserManagementViewState extends State<UserManagementView> {
                     ),
                     for (final r in UserRole.values)
                       ChoiceChip(
-                        label: Text(r.label),
+                        label: Text(
+                          CodeNamesScope.of(
+                            context,
+                          ).name(CodeGroup.role, r.code, r.label),
+                        ),
                         selected: _viewModel.roleFilter == r,
                         onSelected: (_) => _viewModel.setRoleFilter(r),
                       ),
@@ -100,7 +106,11 @@ class _UserManagementViewState extends State<UserManagementView> {
                           child: ListTile(
                             title: Text(u.name + ' (' + u.id + ')'),
                             subtitle: Text(
-                              u.role.label +
+                              CodeNamesScope.of(context).name(
+                                    CodeGroup.role,
+                                    u.role.code,
+                                    u.role.label,
+                                  ) +
                                   (u.major != null ? '  |  ' + u.major! : '') +
                                   (u.active ? '' : '  |  사용 안 함'),
                             ),
@@ -155,7 +165,8 @@ class _UserFormDialogState extends State<_UserFormDialog> {
     _id = TextEditingController(text: u?.id ?? '');
     _name = TextEditingController(text: u?.name ?? '');
     _role = u?.role ?? UserRole.student;
-    _major = u?.major ?? (widget.majors.isNotEmpty ? widget.majors.first : null);
+    _major =
+        u?.major ?? (widget.majors.isNotEmpty ? widget.majors.first : null);
     _active = u?.active ?? true;
   }
 
@@ -208,7 +219,14 @@ class _UserFormDialogState extends State<_UserFormDialog> {
               decoration: const InputDecoration(labelText: '역할'),
               items: [
                 for (final r in UserRole.values)
-                  DropdownMenuItem(value: r, child: Text(r.label)),
+                  DropdownMenuItem(
+                    value: r,
+                    child: Text(
+                      CodeNamesScope.of(
+                        context,
+                      ).name(CodeGroup.role, r.code, r.label),
+                    ),
+                  ),
               ],
               onChanged: (v) => setState(() => _role = v ?? _role),
             ),

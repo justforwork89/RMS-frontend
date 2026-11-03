@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 
 import '../app_dependencies.dart';
+import '../models/code_group.dart';
 import '../models/course.dart';
 import '../models/enrollment.dart';
 import '../models/user.dart';
+import 'common_code_names_viewmodel.dart';
 
 /// 대시보드 카드 한 장: 제목 + 요약 줄들.
 class DashboardSection {
@@ -15,10 +17,19 @@ class DashboardSection {
 
 /// 홈 대시보드(LMS-H001) ViewModel. 역할(학생/강사/관리자)별로 요약 카드를 만든다.
 class DashboardViewModel extends ChangeNotifier {
-  DashboardViewModel(this._deps, this._user);
+  DashboardViewModel(this._deps, this._user, this._codeNames) {
+    _codeNames.addListener(load);
+  }
+
+  @override
+  void dispose() {
+    _codeNames.removeListener(load);
+    super.dispose();
+  }
 
   final AppDependencies _deps;
   final AppUser _user;
+  final CodeNames _codeNames;
 
   List<DashboardSection> _sections = const [];
   bool _loading = false;
@@ -71,7 +82,14 @@ class DashboardViewModel extends ChangeNotifier {
       DashboardSection('내 수강 과정', [
         if (mine.isEmpty) '신청한 과정이 없습니다.',
         for (final e in mine)
-          (byId[e.courseId]?.name ?? '-') + ' (' + e.status.label + ')',
+          (byId[e.courseId]?.name ?? '-') +
+              ' (' +
+              _codeNames.name(
+                CodeGroup.enrollStatus,
+                e.status.code,
+                e.status.label,
+              ) +
+              ')',
       ]),
       DashboardSection('마감 임박 과제', [
         if (upcoming.isEmpty) '마감이 다가온 미제출 과제가 없습니다.',
@@ -99,16 +117,18 @@ class DashboardViewModel extends ChangeNotifier {
         for (final c in courses)
           c.name +
               ' (' +
-              c.status.label +
+              _codeNames.name(
+                CodeGroup.courseStatus,
+                c.status.code,
+                c.status.label,
+              ) +
               ', ' +
               c.enrolled.toString() +
               '/' +
               c.capacity.toString() +
               '명)',
       ]),
-      DashboardSection('채점 대기', [
-        '채점 대기 제출물 ' + pending.toString() + '건',
-      ]),
+      DashboardSection('채점 대기', ['채점 대기 제출물 ' + pending.toString() + '건']),
     ];
   }
 
@@ -116,16 +136,15 @@ class DashboardViewModel extends ChangeNotifier {
     final users = await _deps.users.fetchUsers();
     final courses = await _deps.courses.fetchCourses();
     final enrollments = await _deps.enrollments.fetchAll();
-    final pending =
-        enrollments.where((e) => e.status == EnrollStatus.applied).length;
+    final pending = enrollments
+        .where((e) => e.status == EnrollStatus.applied)
+        .length;
     return [
       DashboardSection('운영 현황', [
         '전체 사용자 ' + users.length.toString() + '명',
         '전체 과정 ' + courses.length.toString() + '개',
       ]),
-      DashboardSection('승인 대기', [
-        '수강 승인 대기 ' + pending.toString() + '건',
-      ]),
+      DashboardSection('승인 대기', ['수강 승인 대기 ' + pending.toString() + '건']),
     ];
   }
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../models/code_group.dart';
+import '../viewmodels/common_code_names_viewmodel.dart';
 
 import '../app_dependencies.dart';
 import '../models/course.dart';
@@ -118,7 +120,12 @@ class _HomeShellViewState extends State<HomeShellView> {
         child: Padding(
           padding: const EdgeInsets.only(right: 12),
           child: Text(
-            _user.name + ' (' + _user.role.label + ')',
+            _user.name +
+                ' (' +
+                CodeNamesScope.of(
+                  context,
+                ).name(CodeGroup.role, _user.role.code, _user.role.label) +
+                ')',
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ),
@@ -210,13 +217,20 @@ class _AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final major = user.major;
-    final account = user.role.label + ' · ' + user.id;
+    final account =
+        CodeNamesScope.of(
+          context,
+        ).name(CodeGroup.role, user.role.code, user.role.label) +
+        ' · ' +
+        user.id;
     return Drawer(
       child: Column(
         children: [
           UserAccountsDrawerHeader(
             accountName: Text(user.name),
-            accountEmail: Text(major == null ? account : account + ' · ' + major),
+            accountEmail: Text(
+              major == null ? account : account + ' · ' + major,
+            ),
             currentAccountPicture: const CircleAvatar(
               child: Icon(Icons.person),
             ),

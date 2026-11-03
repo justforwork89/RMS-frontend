@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../app_dependencies.dart';
+import '../models/code_group.dart';
 import '../models/user.dart';
+import '../viewmodels/common_code_names_viewmodel.dart';
 import '../viewmodels/dashboard_viewmodel.dart';
 
 /// 홈 대시보드 (LMS-H001). 로그인한 역할에 맞는 요약 카드를 보여준다.
@@ -28,8 +30,15 @@ class _HomeDashboardViewState extends State<HomeDashboardView> {
 
   @override
   void initState() {
+    final CodeNames _codeNames = context
+        .getInheritedWidgetOfExactType<CodeNamesScope>()!
+        .notifier!;
     super.initState();
-    _viewModel = DashboardViewModel(widget.dependencies, widget.user)..load();
+    _viewModel = DashboardViewModel(
+      widget.dependencies,
+      widget.user,
+      _codeNames,
+    )..load();
   }
 
   @override
@@ -61,7 +70,14 @@ class _HomeDashboardViewState extends State<HomeDashboardView> {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 4),
-                Text(widget.user.role.label + ' 계정으로 로그인했습니다.'),
+                Text(
+                  CodeNamesScope.of(context).name(
+                        CodeGroup.role,
+                        widget.user.role.code,
+                        widget.user.role.label,
+                      ) +
+                      ' 계정으로 로그인했습니다.',
+                ),
                 const SizedBox(height: 16),
                 for (final s in _viewModel.sections) ...[
                   _SectionCard(section: s),
@@ -90,10 +106,7 @@ class _SectionCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              section.title,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text(section.title, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             for (final line in section.lines)
               Padding(
