@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../models/code_group.dart';
 import '../models/course.dart';
 import '../repositories/course_repository.dart';
+import '../viewmodels/common_code_names_viewmodel.dart';
 import '../viewmodels/subject_info_viewmodel.dart';
 import 'course_status_chip.dart';
 
@@ -91,7 +93,14 @@ class _SubjectInfoViewState extends State<SubjectInfoView> {
                         child: Text('전체'),
                       ),
                       for (final m in _viewModel.majors)
-                        DropdownMenuItem<String?>(value: m, child: Text(m)),
+                        DropdownMenuItem<String?>(
+                          value: m,
+                          child: Text(
+                            CodeNamesScope.of(
+                              context,
+                            ).name(CodeGroup.major, m, m),
+                          ),
+                        ),
                     ],
                     onChanged: _viewModel.filterByMajor,
                   ),
@@ -183,7 +192,14 @@ class _SubjectCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 6),
-            Text('전공 ' + course.major + '  |  교수 ' + course.instructor),
+            Text(
+              '전공 ' +
+                  CodeNamesScope.of(
+                    context,
+                  ).name(CodeGroup.major, course.major, course.major) +
+                  '  |  교수 ' +
+                  course.instructor,
+            ),
             const SizedBox(height: 2),
             Text('교육기간 ' + period),
             const SizedBox(height: 2),

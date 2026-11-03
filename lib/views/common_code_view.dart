@@ -46,7 +46,9 @@ class _CommonCodeViewState extends State<CommonCodeView> {
         CodeGroup.courseStatus,
         CodeGroup.enrollStatus,
         CodeGroup.role,
+        CodeGroup.major,
       ]);
+      widget.dependencies.courses.loadMajors();
     }
     showToast(context, error ?? '저장되었습니다.');
   }
@@ -72,7 +74,9 @@ class _CommonCodeViewState extends State<CommonCodeView> {
         CodeGroup.courseStatus,
         CodeGroup.enrollStatus,
         CodeGroup.role,
+        CodeGroup.major,
       ]);
+      widget.dependencies.courses.loadMajors();
     }
     showToast(context, error ?? '삭제되었습니다.');
   }

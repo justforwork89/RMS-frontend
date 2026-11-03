@@ -16,6 +16,9 @@ enum CourseStatus {
   bool canChangeTo(CourseStatus next) => next.index == index + 1;
 }
 
+/// 전공 미지정 시 기본값 (공통코드 MAJOR의 '공통').
+const defaultMajorCode = '40';
+
 /// 과정(과목) Model (TB_COURSE).
 class Course {
   const Course({
@@ -23,7 +26,7 @@ class Course {
     required this.name,
     this.description = '',
     required this.instructor,
-    this.major = '공통',
+    this.major = defaultMajorCode,
     required this.startDate,
     required this.endDate,
     required this.capacity,
@@ -36,7 +39,7 @@ class Course {
   final String description;
   final String instructor;
 
-  /// 전공 구분 (과목/교수 정보 조회 조건).
+  /// 전공 코드 (공통코드 MAJOR). 과목/교수 정보 조회 조건.
   final String major;
   final DateTime startDate;
   final DateTime endDate;

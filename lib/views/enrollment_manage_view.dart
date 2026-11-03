@@ -104,7 +104,9 @@ class _EnrollmentManageViewState extends State<EnrollmentManageView> {
               enabled: !c.isFull,
               title: Text(c.name),
               subtitle: Text(
-                c.major +
+                CodeNamesScope.of(
+                      context,
+                    ).name(CodeGroup.major, c.major, c.major) +
                     ' | ' +
                     c.instructor +
                     ' | ' +
@@ -197,7 +199,14 @@ class _EnrollmentManageViewState extends State<EnrollmentManageView> {
                         child: Text('전체'),
                       ),
                       for (final m in _viewModel.majors)
-                        DropdownMenuItem<String?>(value: m, child: Text(m)),
+                        DropdownMenuItem<String?>(
+                          value: m,
+                          child: Text(
+                            CodeNamesScope.of(
+                              context,
+                            ).name(CodeGroup.major, m, m),
+                          ),
+                        ),
                     ],
                     onChanged: _viewModel.setMajor,
                   ),
@@ -343,7 +352,13 @@ class _CourseSummary extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        Text(course.major + '  |  교수 ' + course.instructor),
+        Text(
+          CodeNamesScope.of(
+                context,
+              ).name(CodeGroup.major, course.major, course.major) +
+              '  |  교수 ' +
+              course.instructor,
+        ),
         const SizedBox(height: 2),
         Text(period),
         const SizedBox(height: 2),

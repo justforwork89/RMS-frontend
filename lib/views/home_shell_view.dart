@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../models/code_group.dart';
-import '../viewmodels/common_code_names_viewmodel.dart';
 
 import '../app_dependencies.dart';
+import '../models/code_group.dart';
 import '../models/course.dart';
 import '../models/user.dart';
 import '../viewmodels/auth_viewmodel.dart';
+import '../viewmodels/common_code_names_viewmodel.dart';
 import 'assignment_list_view.dart';
 import 'common_code_view.dart';
 import 'course_detail_view.dart';
@@ -216,7 +216,11 @@ class _AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final major = user.major;
+    final major = user.major == null
+        ? null
+        : CodeNamesScope.of(
+            context,
+          ).name(CodeGroup.major, user.major!, user.major!);
     final account =
         CodeNamesScope.of(
           context,

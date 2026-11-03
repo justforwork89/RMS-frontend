@@ -118,8 +118,15 @@ class _CourseFormViewState extends State<CourseFormView> {
                 _dropdown<String>(
                   label: '전공',
                   value: _viewModel.major,
-                  items: _viewModel.majors,
-                  text: (v) => v,
+                  // 저장된 전공이 목록에 없어도(삭제된 코드 등) 드롭다운이 깨지지 않게 포함한다.
+                  items: [
+                    ..._viewModel.majors,
+                    if (!_viewModel.majors.contains(_viewModel.major))
+                      _viewModel.major,
+                  ],
+                  text: (v) => CodeNamesScope.of(
+                    context,
+                  ).name(CodeGroup.major, v, v),
                   onChanged: readOnly ? null : _viewModel.setMajor,
                 ),
                 const SizedBox(height: 12),

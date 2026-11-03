@@ -11,13 +11,20 @@ import 'api_user_repository.dart';
 AppDependencies createApiDependencies() {
   final api = ApiClient();
   // final courses = MockCourseRepository(); // TODO: 강의 API 연동 시 교체
-  final courses = ApiCourseRepository(api);
+  final commonCodes = ApiCommonCodeRepository(api);
+  final courses = ApiCourseRepository(api, commonCodes);
   return AppDependencies(
-    auth: ApiAuthRepository(api, onLoggedIn: courses.loadInstructors),
+    auth: ApiAuthRepository(
+      api,
+      onLoggedIn: () async {
+        await courses.loadInstructors();
+        await courses.loadMajors();
+      },
+    ),
     users: ApiUserRepository(api),
     courses: courses,
     enrollments: ApiEnrollmentRepository(api),
     assignments: ApiAssignmentRepository(api),
-    commonCodes: ApiCommonCodeRepository(api),
+    commonCodes: commonCodes,
   );
 }

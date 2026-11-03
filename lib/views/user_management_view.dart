@@ -111,7 +111,14 @@ class _UserManagementViewState extends State<UserManagementView> {
                                     u.role.code,
                                     u.role.label,
                                   ) +
-                                  (u.major != null ? '  |  ' + u.major! : '') +
+                                  (u.major != null
+                                      ? '  |  ' +
+                                            CodeNamesScope.of(context).name(
+                                              CodeGroup.major,
+                                              u.major!,
+                                              u.major!,
+                                            )
+                                      : '') +
                                   (u.active ? '' : '  |  사용 안 함'),
                             ),
                             trailing: const Icon(Icons.edit),
@@ -235,8 +242,20 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                 value: _major,
                 decoration: const InputDecoration(labelText: '전공'),
                 items: [
-                  for (final m in widget.majors)
-                    DropdownMenuItem(value: m, child: Text(m)),
+                  // 저장된 전공이 목록에 없어도(삭제된 코드 등) 드롭다운이 깨지지 않게 포함한다.
+                  for (final m in [
+                    ...widget.majors,
+                    if (_major != null && !widget.majors.contains(_major))
+                      _major!,
+                  ])
+                    DropdownMenuItem(
+                      value: m,
+                      child: Text(
+                        CodeNamesScope.of(
+                          context,
+                        ).name(CodeGroup.major, m, m),
+                      ),
+                    ),
                 ],
                 onChanged: (v) => setState(() => _major = v),
               ),

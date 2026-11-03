@@ -1,6 +1,8 @@
+import '../models/code_group.dart';
 import '../models/course.dart';
 import '../repositories/course_repository.dart';
 import 'api_client.dart';
+import 'api_common_code_repository.dart';
 
 CourseStatus _statusFromCode(String code) {
   for (final e in CourseStatus.values) {
@@ -10,17 +12,18 @@ CourseStatus _statusFromCode(String code) {
 }
 
 class ApiCourseRepository implements CourseRepository {
-  ApiCourseRepository(this._api);
+  ApiCourseRepository(this._api, this._commonCodes);
 
   final ApiClient _api;
+  final ApiCommonCodeRepository _commonCodes;
   List<({String id, String name})> _instructors = const [];
+  List<String> _majors = const [];
 
   @override
   List<String> get instructors => [for (final i in _instructors) i.name];
 
-  // TODO: 전공 코드 API가 생기면 교체
   @override
-  List<String> get majors => const ['컴퓨터공학', '정보보안', '데이터분석'];
+  List<String> get majors => _majors;
 
   /// 로그인 직후 호출해 강사 선택지를 채운다.
   Future<void> loadInstructors() async {
@@ -32,6 +35,12 @@ class ApiCourseRepository implements CourseRepository {
           name: e['name'] as String,
         ),
     ];
+  }
+
+  @override
+  Future<void> loadMajors() async {
+    final list = await _commonCodes.fetchByGroup(CodeGroup.major);
+    _majors = [for (final c in list) c.code];
   }
 
   @override

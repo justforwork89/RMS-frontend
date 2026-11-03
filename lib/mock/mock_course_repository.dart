@@ -139,4 +139,7 @@ class MockCourseRepository implements CourseRepository {
 
   Future<void> _latency() =>
       Future<void>.delayed(const Duration(milliseconds: 150));
+
+  @override
+  Future<void> loadMajors() async {}
 }

@@ -10,7 +10,11 @@ abstract class CourseRepository {
   /// 전공 선택지 (추후 전공 코드 API로 대체).
   List<String> get majors;
 
-  Future<List<Course>> fetchCourses({String keyword = '', CourseStatus? status});
+  Future<List<Course>> fetchCourses({
+    String keyword = '',
+    CourseStatus? status,
+  });
+  Future<void> loadMajors();
 
   /// id가 null이면 등록, 아니면 수정.
   Future<Course> save(Course course);

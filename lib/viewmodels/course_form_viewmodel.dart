@@ -9,7 +9,7 @@ class CourseFormViewModel extends ChangeNotifier {
   CourseFormViewModel(this._repository, {Course? course}) : _original = course {
     final c = course;
     instructor = c?.instructor ?? _repository.instructors.first;
-    major = c?.major ?? _repository.majors.first;
+    major = c?.major ?? (majors.isEmpty ? defaultMajorCode : majors.first);
     if (c != null) {
       name = c.name;
       description = c.description;

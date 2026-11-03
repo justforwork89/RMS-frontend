@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../app_dependencies.dart';
+import '../models/code_group.dart';
 import '../models/course.dart';
 import '../models/user.dart';
+import '../viewmodels/common_code_names_viewmodel.dart';
 import '../viewmodels/course_detail_viewmodel.dart';
 import 'course_status_chip.dart';
 import 'dialogs.dart';
@@ -83,7 +85,12 @@ class _CourseDetailViewState extends State<CourseDetailView> {
                 ],
               ),
               const SizedBox(height: 16),
-              _row('전공', c.major),
+              _row(
+                '전공',
+                CodeNamesScope.of(
+                  context,
+                ).name(CodeGroup.major, c.major, c.major),
+              ),
               _row('담당 강사', c.instructor),
               _row(
                 '교육 기간',

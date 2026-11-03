@@ -44,6 +44,7 @@ class _LmsAppState extends State<LmsApp> {
           CodeGroup.courseStatus,
           CodeGroup.enrollStatus,
           CodeGroup.role,
+          CodeGroup.major,
         ]);
       }
     });
