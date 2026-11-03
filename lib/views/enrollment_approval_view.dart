@@ -75,7 +75,11 @@ class _EnrollmentApprovalViewState extends State<EnrollmentApprovalView> {
                   ),
                   for (final s in EnrollStatus.values)
                     ChoiceChip(
-                      label: Text(s.label),
+                      label: Text(
+                        CodeNamesScope.of(
+                          context,
+                        ).name(CodeGroup.enrollStatus, s.code, s.label),
+                      ),
                       selected: _viewModel.filter == s,
                       onSelected: (_) => _viewModel.setFilter(s),
                     ),

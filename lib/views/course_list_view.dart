@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../models/code_group.dart';
 import '../models/course.dart';
 import '../repositories/course_repository.dart';
+import '../viewmodels/common_code_names_viewmodel.dart';
 import '../viewmodels/course_list_viewmodel.dart';
 import 'course_form_view.dart';
 import 'course_status_chip.dart';
@@ -43,10 +45,8 @@ class _CourseListViewState extends State<CourseListView> {
   Future<void> _openForm({Course? course}) async {
     final saved = await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(
-        builder: (_) => CourseFormView(
-          repository: widget.repository,
-          course: course,
-        ),
+        builder: (_) =>
+            CourseFormView(repository: widget.repository, course: course),
       ),
     );
     if (saved == true) {
@@ -75,18 +75,15 @@ class _CourseListViewState extends State<CourseListView> {
     if (ok != true) return;
     final error = await _viewModel.delete(course);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(error ?? '삭제되었습니다.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(error ?? '삭제되었습니다.')));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('과정 관리'),
-        actions: widget.actions,
-      ),
+      appBar: AppBar(title: const Text('과정 관리'), actions: widget.actions),
       drawer: widget.drawer,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(),
@@ -149,7 +146,11 @@ class _CourseListViewState extends State<CourseListView> {
                       for (final s in CourseStatus.values)
                         DropdownMenuItem<CourseStatus?>(
                           value: s,
-                          child: Text(s.label),
+                          child: Text(
+                            CodeNamesScope.of(
+                              context,
+                            ).name(CodeGroup.courseStatus, s.code, s.label),
+                          ),
                         ),
                     ],
                     onChanged: _viewModel.filterByStatus,
@@ -206,8 +207,10 @@ class _CourseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final period = formatDate(course.startDate) + ' ~ ' + formatDate(course.endDate);
-    final headcount = course.enrolled.toString() + ' / ' + course.capacity.toString() + '명';
+    final period =
+        formatDate(course.startDate) + ' ~ ' + formatDate(course.endDate);
+    final headcount =
+        course.enrolled.toString() + ' / ' + course.capacity.toString() + '명';
     return Card(
       margin: EdgeInsets.zero,
       child: InkWell(

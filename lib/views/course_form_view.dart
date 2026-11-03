@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../models/code_group.dart';
 import '../models/course.dart';
 import '../repositories/course_repository.dart';
+import '../viewmodels/common_code_names_viewmodel.dart';
 import '../viewmodels/course_form_viewmodel.dart';
 
 /// 과정 등록/수정 화면. course가 null이면 등록, 아니면 수정.
@@ -28,7 +30,9 @@ class _CourseFormViewState extends State<CourseFormView> {
     super.initState();
     _viewModel = CourseFormViewModel(widget.repository, course: widget.course);
     _nameController = TextEditingController(text: _viewModel.name);
-    _descriptionController = TextEditingController(text: _viewModel.description);
+    _descriptionController = TextEditingController(
+      text: _viewModel.description,
+    );
     _capacityController = TextEditingController(text: _viewModel.capacityText);
   }
 
@@ -76,9 +80,7 @@ class _CourseFormViewState extends State<CourseFormView> {
       builder: (context, _) {
         final readOnly = _viewModel.isReadOnly;
         return Scaffold(
-          appBar: AppBar(
-            title: Text(_viewModel.isEdit ? '과정 수정' : '과정 등록'),
-          ),
+          appBar: AppBar(title: Text(_viewModel.isEdit ? '과정 수정' : '과정 등록')),
           body: Form(
             key: _formKey,
             child: ListView(
@@ -143,7 +145,9 @@ class _CourseFormViewState extends State<CourseFormView> {
                       child: _dateField(
                         label: '교육 종료일 *',
                         value: _viewModel.endDate,
-                        onTap: readOnly ? null : () => _pickDate(isStart: false),
+                        onTap: readOnly
+                            ? null
+                            : () => _pickDate(isStart: false),
                       ),
                     ),
                   ],
@@ -155,7 +159,9 @@ class _CourseFormViewState extends State<CourseFormView> {
                     padding: const EdgeInsets.only(top: 6),
                     child: Text(
                       _viewModel.dateError!,
-                      style: TextStyle(color: Theme.of(context).colorScheme.error),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                     ),
                   ),
                 const SizedBox(height: 12),
@@ -175,7 +181,9 @@ class _CourseFormViewState extends State<CourseFormView> {
                   label: '상태',
                   value: _viewModel.status,
                   items: _viewModel.selectableStatuses,
-                  text: (v) => v.label,
+                  text: (v) => CodeNamesScope.of(
+                    context,
+                  ).name(CodeGroup.courseStatus, v.code, v.label),
                   onChanged: readOnly ? null : _viewModel.setStatus,
                 ),
                 if (_viewModel.errorMessage != null)
@@ -183,7 +191,9 @@ class _CourseFormViewState extends State<CourseFormView> {
                     padding: const EdgeInsets.only(top: 12),
                     child: Text(
                       _viewModel.errorMessage!,
-                      style: TextStyle(color: Theme.of(context).colorScheme.error),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                     ),
                   ),
                 const SizedBox(height: 24),
@@ -198,7 +208,9 @@ class _CourseFormViewState extends State<CourseFormView> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: FilledButton(
-                        onPressed: (readOnly || _viewModel.saving) ? null : _submit,
+                        onPressed: (readOnly || _viewModel.saving)
+                            ? null
+                            : _submit,
                         child: Text(_viewModel.saving ? '저장 중...' : '저장'),
                       ),
                     ),

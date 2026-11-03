@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import '../models/code_group.dart';
 
 import '../app_dependencies.dart';
 import '../models/common_code.dart';
+import '../viewmodels/common_code_names_viewmodel.dart';
 import '../viewmodels/common_code_viewmodel.dart';
 import 'dialogs.dart';
 
@@ -33,11 +35,18 @@ class _CommonCodeViewState extends State<CommonCodeView> {
   Future<void> _edit(CommonCode? code) async {
     final result = await showDialog<CommonCode>(
       context: context,
-      builder: (_) => _CodeFormDialog(code: code, defaultGroup: _viewModel.group),
+      builder: (_) =>
+          _CodeFormDialog(code: code, defaultGroup: _viewModel.group),
     );
     if (result == null) return;
     final error = await _viewModel.save(result, isNew: code == null);
     if (!mounted) return;
+    if (error == null) {
+      CodeNamesScope.of(context).load(widget.dependencies.commonCodes, [
+        CodeGroup.courseStatus,
+        CodeGroup.enrollStatus,
+      ]);
+    }
     showToast(context, error ?? '저장되었습니다.');
   }
 
@@ -45,12 +54,24 @@ class _CommonCodeViewState extends State<CommonCodeView> {
     final ok = await showConfirmDialog(
       context,
       title: '코드 삭제',
-      message: code.groupCd + ' / ' + code.code + ' (' + code.codeName + ') 을(를) 삭제할까요?',
+      message:
+          code.groupCd +
+          ' / ' +
+          code.code +
+          ' (' +
+          code.codeName +
+          ') 을(를) 삭제할까요?',
       okLabel: '삭제',
     );
     if (!ok) return;
     final error = await _viewModel.delete(code);
     if (!mounted) return;
+    if (error == null) {
+      CodeNamesScope.of(context).load(widget.dependencies.commonCodes, [
+        CodeGroup.courseStatus,
+        CodeGroup.enrollStatus,
+      ]);
+    }
     showToast(context, error ?? '삭제되었습니다.');
   }
 
@@ -109,7 +130,11 @@ class _CommonCodeViewState extends State<CommonCodeView> {
                           child: ListTile(
                             title: Text(c.codeName),
                             subtitle: Text(
-                              c.groupCd + ' / ' + c.code + '  |  정렬 ' + c.sortOrder.toString(),
+                              c.groupCd +
+                                  ' / ' +
+                                  c.code +
+                                  '  |  정렬 ' +
+                                  c.sortOrder.toString(),
                             ),
                             onTap: () => _edit(c),
                             trailing: IconButton(
@@ -154,7 +179,9 @@ class _CodeFormDialogState extends State<_CodeFormDialog> {
   void initState() {
     super.initState();
     final c = widget.code;
-    _group = TextEditingController(text: c?.groupCd ?? widget.defaultGroup ?? '');
+    _group = TextEditingController(
+      text: c?.groupCd ?? widget.defaultGroup ?? '',
+    );
     _code = TextEditingController(text: c?.code ?? '');
     _name = TextEditingController(text: c?.codeName ?? '');
     _order = TextEditingController(text: (c?.sortOrder ?? 0).toString());
