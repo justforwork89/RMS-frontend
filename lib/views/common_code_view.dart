@@ -36,8 +36,7 @@ class _CommonCodeViewState extends State<CommonCodeView> {
   Future<void> _edit(CommonCode? code, {String? group}) async {
     final result = await showDialog<CommonCode>(
       context: context,
-      builder: (_) =>
-          _CodeFormDialog(code: code, defaultGroup: _viewModel.group),
+      builder: (_) => _CodeFormDialog(code: code, defaultGroup: group),
     );
     if (result == null) return;
     final error = await _viewModel.save(result, isNew: code == null);

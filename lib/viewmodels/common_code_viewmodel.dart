@@ -11,15 +11,11 @@ class CommonCodeViewModel extends ChangeNotifier with ActionRunner {
   final AppDependencies _deps;
 
   List<CommonCode> _all = const [];
-  String? _group;
   bool _loading = false;
   String? _errorMessage;
 
   bool get loading => _loading;
   String? get errorMessage => _errorMessage;
-
-  /// 선택한 코드 그룹. null이면 전체.
-  String? get group => _group;
 
   /// 트리 모양: 그룹 코드(상위) → 그 그룹의 코드들(하위, 정렬 순서대로)
   /// 예) {'COURSE_STATUS': [준비중, 모집예정, ...], 'ROLE': [학생, 강사, 관리자]}
