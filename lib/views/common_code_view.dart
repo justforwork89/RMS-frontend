@@ -32,7 +32,8 @@ class _CommonCodeViewState extends State<CommonCodeView> {
     super.dispose();
   }
 
-  Future<void> _edit(CommonCode? code) async {
+  /// code가 null이면 새 코드 등록. group을 주면 그 그룹이 미리 채워진다.
+  Future<void> _edit(CommonCode? code, {String? group}) async {
     final result = await showDialog<CommonCode>(
       context: context,
       builder: (_) =>
@@ -92,69 +93,58 @@ class _CommonCodeViewState extends State<CommonCodeView> {
       body: ListenableBuilder(
         listenable: _viewModel,
         builder: (context, _) {
-          final codes = _viewModel.codes;
-          return Column(
+          final tree = _viewModel.tree;
+          if (_viewModel.loading && tree.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final error = _viewModel.errorMessage;
+          if (error != null) return Center(child: Text(error));
+          if (tree.isEmpty) {
+            return const Center(child: Text('등록된 코드가 없습니다.'));
+          }
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 88),
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                child: Wrap(
-                  spacing: 8,
-                  children: [
-                    ChoiceChip(
-                      label: const Text('전체'),
-                      selected: _viewModel.group == null,
-                      onSelected: (_) => _viewModel.setGroup(null),
-                    ),
-                    for (final g in _viewModel.groups)
-                      ChoiceChip(
-                        label: Text(g),
-                        selected: _viewModel.group == g,
-                        onSelected: (_) => _viewModel.setGroup(g),
-                      ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Builder(
-                  builder: (context) {
-                    if (_viewModel.loading && codes.isEmpty) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    final error = _viewModel.errorMessage;
-                    if (error != null) return Center(child: Text(error));
-                    if (codes.isEmpty) {
-                      return const Center(child: Text('등록된 코드가 없습니다.'));
-                    }
-                    return ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
-                      itemCount: codes.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
-                      itemBuilder: (context, i) {
-                        final c = codes[i];
-                        return Card(
-                          margin: EdgeInsets.zero,
-                          child: ListTile(
-                            title: Text(c.codeName),
-                            subtitle: Text(
-                              c.groupCd +
-                                  ' / ' +
-                                  c.code +
-                                  '  |  정렬 ' +
-                                  c.sortOrder.toString(),
-                            ),
-                            onTap: () => _edit(c),
-                            trailing: IconButton(
-                              tooltip: '삭제',
-                              icon: const Icon(Icons.delete_outline),
-                              onPressed: () => _delete(c),
-                            ),
+              // 상위: 코드 그룹 (눌러서 펼치기/접기)
+              for (final entry in tree.entries)
+                Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  clipBehavior: Clip.antiAlias,
+                  child: ExpansionTile(
+                    key: PageStorageKey(entry.key), // 새로고침해도 펼침 상태 유지
+                    leading: const Icon(Icons.folder_outlined),
+                    title: Text(CodeGroup.label(entry.key)),
+                    subtitle: Text('${entry.key}  ·  ${entry.value.length}개'),
+                    childrenPadding: const EdgeInsets.fromLTRB(24, 0, 8, 8),
+                    children: [
+                      // 하위: 그 그룹의 코드들
+                      for (final c in entry.value)
+                        ListTile(
+                          dense: true,
+                          leading: const Icon(
+                            Icons.subdirectory_arrow_right,
+                            size: 18,
                           ),
-                        );
-                      },
-                    );
-                  },
+                          title: Text(c.codeName),
+                          subtitle: Text('코드 ${c.code}  |  정렬 ${c.sortOrder}'),
+                          onTap: () => _edit(c),
+                          trailing: IconButton(
+                            tooltip: '삭제',
+                            icon: const Icon(Icons.delete_outline),
+                            onPressed: () => _delete(c),
+                          ),
+                        ),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          onPressed: () => _edit(null, group: entry.key),
+                          icon: const Icon(Icons.add, size: 18),
+                          label: const Text('이 그룹에 코드 추가'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
             ],
           );
         },

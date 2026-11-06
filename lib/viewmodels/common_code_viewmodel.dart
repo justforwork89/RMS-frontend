@@ -21,18 +21,14 @@ class CommonCodeViewModel extends ChangeNotifier with ActionRunner {
   /// 선택한 코드 그룹. null이면 전체.
   String? get group => _group;
 
-  List<String> get groups => ({for (final c in _all) c.groupCd}).toList()..sort();
-
-  List<CommonCode> get codes => _group == null
-      ? _all
-      : [
-          for (final c in _all)
-            if (c.groupCd == _group) c,
-        ];
-
-  void setGroup(String? group) {
-    _group = group;
-    notifyListeners();
+  /// 트리 모양: 그룹 코드(상위) → 그 그룹의 코드들(하위, 정렬 순서대로)
+  /// 예) {'COURSE_STATUS': [준비중, 모집예정, ...], 'ROLE': [학생, 강사, 관리자]}
+  Map<String, List<CommonCode>> get tree {
+    final map = <String, List<CommonCode>>{};
+    for (final c in _all) {
+      map.putIfAbsent(c.groupCd, () => []).add(c);
+    }
+    return map;
   }
 
   @override
@@ -42,13 +38,11 @@ class CommonCodeViewModel extends ChangeNotifier with ActionRunner {
     notifyListeners();
     try {
       final list = await _deps.commonCodes.fetchAll();
-      _all = [...list]..sort((a, b) {
+      _all = [...list]
+        ..sort((a, b) {
           final g = a.groupCd.compareTo(b.groupCd);
           return g != 0 ? g : a.sortOrder.compareTo(b.sortOrder);
         });
-      if (_group != null && !_all.any((c) => c.groupCd == _group)) {
-        _group = null;
-      }
     } catch (_) {
       _errorMessage = '공통코드를 불러오지 못했습니다.';
     }
