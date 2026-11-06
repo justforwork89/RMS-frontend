@@ -53,6 +53,7 @@ class _AssignmentListViewState extends State<AssignmentListView> {
           )
         : AssignmentSubmitView(
             repository: widget.dependencies.assignments,
+            submissionFiles: widget.dependencies.submissionFiles,
             assignment: item.assignment,
             courseName: item.course.name,
             student: widget.user,

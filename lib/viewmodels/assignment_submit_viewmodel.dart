@@ -32,26 +32,24 @@ class AssignmentSubmitViewModel extends ChangeNotifier {
   /// 마감 후이거나 채점이 끝나면 수정할 수 없다.
   bool get readOnly => isGraded || isOverdue;
 
-  /// 제출 성공 시 true. 실패 시 errorMessage에 사유가 설정된다.
-  Future<bool> submit(String content, String fileName) async {
+  /// 제출 성공 시 서버가 돌려준 제출 내역(제출 번호 포함), 실패 시 null.
+  /// 첨부 파일은 이 제출 번호로 따로 올린다 (SubmissionFileViewModel).
+  Future<Submission?> submit(String content) async {
     if (content.trim().isEmpty) {
       _errorMessage = '제출 내용을 입력하세요.';
       notifyListeners();
-      return false;
+      return null;
     }
     _saving = true;
     _errorMessage = null;
     notifyListeners();
-    var ok = false;
+    Submission? saved;
     try {
-      final name = fileName.trim();
-      await _repository.submit(
+      saved = await _repository.submit(
         assignmentId: assignment.id!,
         studentId: _student.id,
         content: content,
-        fileName: name.isEmpty ? null : name,
       );
-      ok = true;
     } on BusinessException catch (e) {
       _errorMessage = e.message;
     } catch (_) {
@@ -59,6 +57,6 @@ class AssignmentSubmitViewModel extends ChangeNotifier {
     }
     _saving = false;
     notifyListeners();
-    return ok;
+    return saved;
   }
 }

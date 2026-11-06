@@ -5,6 +5,7 @@ import 'repositories/course_file_repository.dart';
 import 'repositories/course_repository.dart';
 import 'repositories/enrollment_repository.dart';
 import 'repositories/user_repository.dart';
+import 'repositories/submission_file_repository.dart';
 
 /// 앱이 사용하는 데이터 소스 묶음 (API 구현). 생성 위치: lib/api/api_bootstrap.dart
 
@@ -17,6 +18,7 @@ class AppDependencies {
     required this.assignments,
     required this.commonCodes,
     required this.courseFiles,
+    required this.submissionFiles,
   });
 
   final AuthRepository auth;
@@ -26,4 +28,5 @@ class AppDependencies {
   final AssignmentRepository assignments;
   final CommonCodeRepository commonCodes;
   final CourseFileRepository courseFiles;
+  final SubmissionFileRepository submissionFiles;
 }

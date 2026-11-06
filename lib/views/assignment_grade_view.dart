@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import '../app_dependencies.dart';
 import '../models/assignment.dart';
 import '../models/course.dart';
+import '../repositories/submission_file_repository.dart';
 import '../viewmodels/grading_viewmodel.dart';
+import '../viewmodels/submission_file_viewmodel.dart';
 import 'dialogs.dart';
+import 'submission_file_section.dart';
 
 /// 과제 채점 (LMS-A003). 제출물을 확인하고 점수/피드백을 입력한다.
 class AssignmentGradeView extends StatefulWidget {
@@ -81,6 +84,7 @@ class _AssignmentGradeViewState extends State<AssignmentGradeView> {
                 _GradeCard(
                   key: ValueKey(item.submission.id),
                   item: item,
+                  files: widget.dependencies.submissionFiles,
                   onSave: (score, feedback) => _save(item, score, feedback),
                 ),
                 const SizedBox(height: 12),
@@ -94,9 +98,15 @@ class _AssignmentGradeViewState extends State<AssignmentGradeView> {
 }
 
 class _GradeCard extends StatefulWidget {
-  const _GradeCard({super.key, required this.item, required this.onSave});
+  const _GradeCard({
+    super.key,
+    required this.item,
+    required this.files,
+    required this.onSave,
+  });
 
   final GradingItem item;
+  final SubmissionFileRepository files;
   final void Function(String score, String feedback) onSave;
 
   @override
@@ -106,6 +116,7 @@ class _GradeCard extends StatefulWidget {
 class _GradeCardState extends State<_GradeCard> {
   late final TextEditingController _score;
   late final TextEditingController _feedback;
+  late final SubmissionFileViewModel _files; // 강사는 내려받기만 (editable: false)
 
   @override
   void initState() {
@@ -113,12 +124,14 @@ class _GradeCardState extends State<_GradeCard> {
     final s = widget.item.submission;
     _score = TextEditingController(text: s.score?.toString() ?? '');
     _feedback = TextEditingController(text: s.feedback);
+    _files = SubmissionFileViewModel(widget.files, submissionId: s.id)..load();
   }
 
   @override
   void dispose() {
     _score.dispose();
     _feedback.dispose();
+    _files.dispose();
     super.dispose();
   }
 
@@ -147,16 +160,8 @@ class _GradeCardState extends State<_GradeCard> {
             Text('제출일 ' + formatDate(s.submittedAt)),
             const SizedBox(height: 8),
             Text(s.content),
-            if (s.fileName != null) ...[
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  const Icon(Icons.attach_file, size: 16),
-                  const SizedBox(width: 4),
-                  Expanded(child: Text(s.fileName!)),
-                ],
-              ),
-            ],
+            const SizedBox(height: 8),
+            SubmissionFileSection(viewModel: _files),
             const SizedBox(height: 12),
             Row(
               children: [

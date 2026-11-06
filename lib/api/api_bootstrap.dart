@@ -2,6 +2,7 @@ import '../app_dependencies.dart';
 import 'api_assignment_repository.dart';
 import 'api_common_code_repository.dart';
 import 'api_course_file_repository.dart';
+import 'api_submission_file_repository.dart';
 
 import 'api_enrollment_repository.dart';
 import 'api_auth_repository.dart';
@@ -28,5 +29,6 @@ AppDependencies createApiDependencies() {
     assignments: ApiAssignmentRepository(api),
     commonCodes: commonCodes,
     courseFiles: ApiCourseFileRepository(api),
+    submissionFiles: ApiSubmissionFileRepository(api),
   );
 }
