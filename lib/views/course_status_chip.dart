@@ -14,8 +14,12 @@ class CourseStatusChip extends StatelessWidget {
     switch (status) {
       case CourseStatus.preparing:
         return Colors.grey;
+      case CourseStatus.scheduled:
+        return Colors.lightBlue;
       case CourseStatus.recruiting:
         return Colors.blue;
+      case CourseStatus.recruitClosed:
+        return Colors.orange;
       case CourseStatus.inProgress:
         return Colors.green;
       case CourseStatus.closed:

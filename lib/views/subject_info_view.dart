@@ -166,6 +166,9 @@ class _SubjectCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final period =
         formatDate(course.startDate) + ' ~ ' + formatDate(course.endDate);
+    final recruit = formatDate(course.recruitStartDate) +
+        ' ~ ' +
+        formatDate(course.recruitEndDate);
     final headcount = course.enrolled.toString() +
         ' / ' +
         course.capacity.toString() +
@@ -200,6 +203,8 @@ class _SubjectCard extends StatelessWidget {
                   '  |  교수 ' +
                   course.instructor,
             ),
+            const SizedBox(height: 2),
+            Text('모집기간 ' + recruit),
             const SizedBox(height: 2),
             Text('교육기간 ' + period),
             const SizedBox(height: 2),

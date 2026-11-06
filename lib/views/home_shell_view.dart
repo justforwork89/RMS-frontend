@@ -163,6 +163,7 @@ class _HomeShellViewState extends State<HomeShellView> {
         return CourseListView(
           key: key,
           repository: deps.courses,
+          user: _user,
           drawer: drawer,
           actions: actions,
         );

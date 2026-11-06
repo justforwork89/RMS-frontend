@@ -14,8 +14,8 @@ class EnrollmentItem {
   final Enrollment enrollment;
   final Course course;
 
-  /// 모집 중일 때만 변경/취소할 수 있다.
-  bool get editable => course.status == CourseStatus.recruiting;
+  /// 모집 기간 안에서만 변경/취소할 수 있다.
+  bool get editable => course.isRecruitOpen;
 }
 
 /// 수강신청 관리 화면(신청 / 신청 내역)의 ViewModel.
@@ -69,9 +69,7 @@ class EnrollmentViewModel extends ChangeNotifier {
           if (byId[e.courseId] != null) EnrollmentItem(e, byId[e.courseId]!),
       ];
       _enrolledIds = mine.map((e) => e.courseId).toSet();
-      _recruiting = courses
-          .where((c) => c.status == CourseStatus.recruiting)
-          .toList();
+      _recruiting = courses.where((c) => c.isRecruitOpen).toList();
     } catch (_) {
       _errorMessage = '수강신청 정보를 불러오지 못했습니다.';
     }

@@ -6,6 +6,8 @@ import '../models/course.dart';
 import '../models/user.dart';
 import '../viewmodels/common_code_names_viewmodel.dart';
 import '../viewmodels/course_detail_viewmodel.dart';
+
+import 'course_file_section.dart';
 import 'course_status_chip.dart';
 import 'dialogs.dart';
 
@@ -93,6 +95,12 @@ class _CourseDetailViewState extends State<CourseDetailView> {
               ),
               _row('담당 강사', c.instructor),
               _row(
+                '모집 기간',
+                formatDate(c.recruitStartDate) +
+                    ' ~ ' +
+                    formatDate(c.recruitEndDate),
+              ),
+              _row(
                 '교육 기간',
                 formatDate(c.startDate) + ' ~ ' + formatDate(c.endDate),
               ),
@@ -107,15 +115,26 @@ class _CourseDetailViewState extends State<CourseDetailView> {
               const SizedBox(height: 4),
               Text(c.description.isEmpty ? '등록된 설명이 없습니다.' : c.description),
               const SizedBox(height: 24),
+              const Divider(),
+              CourseFileSection(
+                dependencies: widget.dependencies,
+                courseId: c.id!,
+                user: widget.user,
+                instructorId: c.instructorId,
+              ),
+              const SizedBox(height: 24),
               if (_viewModel.isStudent)
                 if (_viewModel.enrolled)
-                  const OutlinedButton(onPressed: null, child: Text('이미 신청한 과정입니다'))
+                  const OutlinedButton(
+                    onPressed: null,
+                    child: Text('이미 신청한 과정입니다'),
+                  )
                 else
                   FilledButton(
                     onPressed: _viewModel.canEnroll ? _enroll : null,
                     child: Text(
-                      c.status != CourseStatus.recruiting
-                          ? '모집 중인 과정이 아닙니다'
+                      !c.isRecruitOpen
+                          ? '모집 기간이 아닙니다'
                           : (c.isFull ? '정원이 마감되었습니다' : '수강신청'),
                     ),
                   ),

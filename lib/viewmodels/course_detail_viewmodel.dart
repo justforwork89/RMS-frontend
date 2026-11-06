@@ -22,10 +22,10 @@ class CourseDetailViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get isStudent => _user.role == UserRole.student;
 
-  /// 학생이 모집 중이고 정원이 남은 과정을 아직 신청하지 않은 경우.
+  /// 학생이 모집 기간 안이고 정원이 남은 과정을 아직 신청하지 않은 경우.
   bool get canEnroll =>
       isStudent &&
-      _course.status == CourseStatus.recruiting &&
+      _course.isRecruitOpen &&
       !_course.isFull &&
       !_enrolled;
 

@@ -1,18 +1,26 @@
 import 'package:flutter/foundation.dart';
 
 import '../models/course.dart';
+import '../models/user.dart';
 import '../repositories/course_repository.dart';
 import '../repositories/business_exception.dart';
 
 /// 과정 등록/수정 화면의 ViewModel. 입력값 보관, 검증, 저장을 담당한다.
 class CourseFormViewModel extends ChangeNotifier {
-  CourseFormViewModel(this._repository, {Course? course}) : _original = course {
+  CourseFormViewModel(this._repository, this._user, {Course? course})
+    : _original = course {
     final c = course;
-    instructor = c?.instructor ?? _repository.instructors.first;
+    instructor =
+        c?.instructor ??
+        (_user.role == UserRole.admin
+            ? _repository.instructors.first
+            : _user.name);
     major = c?.major ?? (majors.isEmpty ? defaultMajorCode : majors.first);
     if (c != null) {
       name = c.name;
       description = c.description;
+      recruitStartDate = c.recruitStartDate;
+      recruitEndDate = c.recruitEndDate;
       startDate = c.startDate;
       endDate = c.endDate;
       capacityText = c.capacity.toString();
@@ -21,12 +29,15 @@ class CourseFormViewModel extends ChangeNotifier {
   }
 
   final CourseRepository _repository;
+  final AppUser _user;
   final Course? _original;
 
   String name = '';
   String description = '';
   late String instructor;
   late String major;
+  DateTime? recruitStartDate;
+  DateTime? recruitEndDate;
   DateTime? startDate;
   DateTime? endDate;
   String capacityText = '';
@@ -37,6 +48,10 @@ class CourseFormViewModel extends ChangeNotifier {
 
   bool get isEdit => _original != null;
 
+  /// 담당 강사는 관리자가 "새로 등록"할 때만 고를 수 있다.
+  /// (강사는 서버가 본인으로 고정하고, 수정 때는 서버가 강사를 바꾸지 않는다)
+  bool get canChooseInstructor => _user.role == UserRole.admin && !isEdit;
+
   /// 종료된 과정은 수정할 수 없다.
   bool get isReadOnly => _original?.status == CourseStatus.closed;
 
@@ -45,12 +60,19 @@ class CourseFormViewModel extends ChangeNotifier {
   List<String> get instructors => _repository.instructors;
   List<String> get majors => _repository.majors;
 
-  /// 현재 상태 + 다음 단계만 선택 가능 (역방향 불가).
+  /// 상태는 관리자만 바꿀 수 있다. (승인 뒤 모집예정~종료는 서버가 날짜로 자동 변경)
+  bool get canChangeStatus => _user.role == UserRole.admin && !isReadOnly;
+
+  /// 관리자 새 등록: 준비중·모집중 / 관리자 수정: 지금 상태 + 승인(준비중→모집중) + 폐강
   List<CourseStatus> get selectableStatuses {
     final base = _original?.status ?? CourseStatus.preparing;
-    return CourseStatus.values
-        .where((s) => s == base || base.canChangeTo(s))
-        .toList();
+    if (!canChangeStatus) return [base];
+    if (!isEdit) return [CourseStatus.preparing, CourseStatus.recruiting];
+    return [
+      base,
+      if (base == CourseStatus.preparing) CourseStatus.recruiting,
+      if (base != CourseStatus.cancelled) CourseStatus.cancelled,
+    ];
   }
 
   void setInstructor(String value) {
@@ -60,6 +82,16 @@ class CourseFormViewModel extends ChangeNotifier {
 
   void setMajor(String value) {
     major = value;
+    notifyListeners();
+  }
+
+  void setRecruitStartDate(DateTime value) {
+    recruitStartDate = value;
+    notifyListeners();
+  }
+
+  void setRecruitEndDate(DateTime value) {
+    recruitEndDate = value;
     notifyListeners();
   }
 
@@ -107,10 +139,22 @@ class CourseFormViewModel extends ChangeNotifier {
     return null;
   }
 
+  /// 모집 기간 검증 메시지 (없으면 null). 교육 기간과 겹치는 건 허용.
+  String? get recruitDateError {
+    final rs = recruitStartDate;
+    final re = recruitEndDate;
+    if (rs == null || re == null) return '모집 시작일과 종료일을 선택하세요.';
+    if (re.isBefore(rs)) return '모집 종료일은 모집 시작일보다 빠를 수 없습니다.';
+    final e = endDate;
+    if (e != null && re.isAfter(e)) return '모집 종료일은 교육 종료일보다 늦을 수 없습니다.';
+    return null;
+  }
+
   String? _validateAll() {
     return validateName(name) ??
         validateDescription(description) ??
         validateCapacity(capacityText) ??
+        recruitDateError ??
         dateError;
   }
 
@@ -136,6 +180,8 @@ class CourseFormViewModel extends ChangeNotifier {
           description: description,
           instructor: instructor,
           major: major,
+          recruitStartDate: recruitStartDate,
+          recruitEndDate: recruitEndDate,
           startDate: startDate!,
           endDate: endDate!,
           capacity: int.parse(capacityText.trim()),

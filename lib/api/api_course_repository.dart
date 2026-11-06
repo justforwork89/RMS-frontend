@@ -11,6 +11,8 @@ CourseStatus _statusFromCode(String code) {
   return CourseStatus.preparing;
 }
 
+DateTime? _dateOrNull(Object? v) => v == null ? null : DateTime.parse(v as String);
+
 class ApiCourseRepository implements CourseRepository {
   ApiCourseRepository(this._api, this._commonCodes);
 
@@ -71,6 +73,8 @@ class ApiCourseRepository implements CourseRepository {
       'description': course.description,
       'instructorId': instructorId,
       'major': course.major,
+      'recruitStartDate': formatDate(course.recruitStartDate),
+      'recruitEndDate': formatDate(course.recruitEndDate),
       'startDate': formatDate(course.startDate),
       'endDate': formatDate(course.endDate),
       'capacity': course.capacity,
@@ -94,7 +98,10 @@ class ApiCourseRepository implements CourseRepository {
       name: j['name'] as String,
       description: (j['description'] as String?) ?? '',
       instructor: j['instructorName'] as String,
+      instructorId: j['instructorId'] as String?,
       major: j['major'] as String,
+      recruitStartDate: _dateOrNull(j['recruitStartDate']),
+      recruitEndDate: _dateOrNull(j['recruitEndDate']),
       startDate: DateTime.parse(j['startDate'] as String),
       endDate: DateTime.parse(j['endDate'] as String),
       capacity: (j['capacity'] as num).toInt(),

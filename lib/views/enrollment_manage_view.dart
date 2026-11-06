@@ -334,6 +334,9 @@ class _CourseSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final period =
         formatDate(course.startDate) + ' ~ ' + formatDate(course.endDate);
+    final recruit = formatDate(course.recruitStartDate) +
+        ' ~ ' +
+        formatDate(course.recruitEndDate);
     final headcount =
         course.enrolled.toString() + ' / ' + course.capacity.toString() + '명';
     return Column(
@@ -360,7 +363,7 @@ class _CourseSummary extends StatelessWidget {
               course.instructor,
         ),
         const SizedBox(height: 2),
-        Text(period),
+        Text('모집 ' + recruit + '  |  교육 ' + period),
         const SizedBox(height: 2),
         Text('정원/신청 ' + headcount),
       ],

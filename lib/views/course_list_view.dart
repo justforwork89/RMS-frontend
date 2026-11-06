@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/code_group.dart';
 import '../models/course.dart';
+import '../models/user.dart';
 import '../repositories/course_repository.dart';
 import '../viewmodels/common_code_names_viewmodel.dart';
 import '../viewmodels/course_list_viewmodel.dart';
@@ -13,11 +14,13 @@ class CourseListView extends StatefulWidget {
   const CourseListView({
     super.key,
     required this.repository,
+    required this.user,
     this.drawer,
     this.actions,
   });
 
   final CourseRepository repository;
+  final AppUser user;
   final Widget? drawer;
   final List<Widget>? actions;
 
@@ -45,8 +48,11 @@ class _CourseListViewState extends State<CourseListView> {
   Future<void> _openForm({Course? course}) async {
     final saved = await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(
-        builder: (_) =>
-            CourseFormView(repository: widget.repository, course: course),
+        builder: (_) => CourseFormView(
+          repository: widget.repository,
+          user: widget.user,
+          course: course,
+        ),
       ),
     );
     if (saved == true) {
@@ -209,6 +215,9 @@ class _CourseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final period =
         formatDate(course.startDate) + ' ~ ' + formatDate(course.endDate);
+    final recruit = formatDate(course.recruitStartDate) +
+        ' ~ ' +
+        formatDate(course.recruitEndDate);
     final headcount =
         course.enrolled.toString() + ' / ' + course.capacity.toString() + '명';
     return Card(
@@ -229,7 +238,9 @@ class _CourseCard extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 4),
-                    Text('강사 ' + course.instructor + '  |  ' + period),
+                    Text('강사 ' + course.instructor),
+                    const SizedBox(height: 2),
+                    Text('모집 ' + recruit + '  |  교육 ' + period),
                     const SizedBox(height: 2),
                     Text('정원/신청 ' + headcount),
                   ],

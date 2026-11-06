@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../models/code_group.dart';
 import '../models/course.dart';
+import '../models/user.dart';
+
 import '../repositories/course_repository.dart';
 import '../viewmodels/common_code_names_viewmodel.dart';
 import '../viewmodels/course_form_viewmodel.dart';
@@ -9,9 +11,15 @@ import '../viewmodels/course_form_viewmodel.dart';
 /// 과정 등록/수정 화면. course가 null이면 등록, 아니면 수정.
 /// 저장에 성공하면 true를 반환하며 닫힌다.
 class CourseFormView extends StatefulWidget {
-  const CourseFormView({super.key, required this.repository, this.course});
+  const CourseFormView({
+    super.key,
+    required this.repository,
+    required this.user,
+    this.course,
+  });
 
   final CourseRepository repository;
+  final AppUser user;
   final Course? course;
 
   @override
@@ -28,7 +36,11 @@ class _CourseFormViewState extends State<CourseFormView> {
   @override
   void initState() {
     super.initState();
-    _viewModel = CourseFormViewModel(widget.repository, course: widget.course);
+    _viewModel = CourseFormViewModel(
+      widget.repository,
+      widget.user,
+      course: widget.course,
+    );
     _nameController = TextEditingController(text: _viewModel.name);
     _descriptionController = TextEditingController(
       text: _viewModel.description,
@@ -59,6 +71,24 @@ class _CourseFormViewState extends State<CourseFormView> {
       _viewModel.setStartDate(picked);
     } else {
       _viewModel.setEndDate(picked);
+    }
+  }
+
+  Future<void> _pickRecruitDate({required bool isStart}) async {
+    final initial =
+        (isStart ? _viewModel.recruitStartDate : _viewModel.recruitEndDate) ??
+        DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2035),
+    );
+    if (picked == null) return;
+    if (isStart) {
+      _viewModel.setRecruitStartDate(picked);
+    } else {
+      _viewModel.setRecruitEndDate(picked);
     }
   }
 
@@ -124,19 +154,60 @@ class _CourseFormViewState extends State<CourseFormView> {
                     if (!_viewModel.majors.contains(_viewModel.major))
                       _viewModel.major,
                   ],
-                  text: (v) => CodeNamesScope.of(
-                    context,
-                  ).name(CodeGroup.major, v, v),
+                  text: (v) =>
+                      CodeNamesScope.of(context).name(CodeGroup.major, v, v),
                   onChanged: readOnly ? null : _viewModel.setMajor,
                 ),
                 const SizedBox(height: 12),
                 _dropdown<String>(
-                  label: '담당 강사',
+                  label: _viewModel.canChooseInstructor
+                      ? '담당 강사'
+                      : '담당 강사 (변경 불가)',
                   value: _viewModel.instructor,
-                  items: _viewModel.instructors,
+                  items: _viewModel.canChooseInstructor
+                      ? _viewModel.instructors
+                      : [_viewModel.instructor],
                   text: (v) => v,
-                  onChanged: readOnly ? null : _viewModel.setInstructor,
+                  onChanged: readOnly || !_viewModel.canChooseInstructor
+                      ? null
+                      : _viewModel.setInstructor,
                 ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _dateField(
+                        label: '모집 시작일 *',
+                        value: _viewModel.recruitStartDate,
+                        onTap: readOnly
+                            ? null
+                            : () => _pickRecruitDate(isStart: true),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _dateField(
+                        label: '모집 종료일 *',
+                        value: _viewModel.recruitEndDate,
+                        onTap: readOnly
+                            ? null
+                            : () => _pickRecruitDate(isStart: false),
+                      ),
+                    ),
+                  ],
+                ),
+                if (_viewModel.recruitStartDate != null &&
+                    _viewModel.recruitEndDate != null &&
+                    _viewModel.recruitDateError != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      _viewModel.recruitDateError!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -191,7 +262,18 @@ class _CourseFormViewState extends State<CourseFormView> {
                   text: (v) => CodeNamesScope.of(
                     context,
                   ).name(CodeGroup.courseStatus, v.code, v.label),
-                  onChanged: readOnly ? null : _viewModel.setStatus,
+                  onChanged: readOnly || !_viewModel.canChangeStatus
+                      ? null
+                      : _viewModel.setStatus,
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4, left: 4),
+                  child: Text(
+                    _viewModel.canChangeStatus
+                        ? '승인(모집중 선택)하면 날짜에 맞춰 모집예정·모집중·모집마감·진행중·종료로 자동으로 바뀝니다.'
+                        : '관리자가 승인하면 날짜에 맞춰 모집예정·모집중·모집마감·진행중·종료로 자동으로 바뀝니다.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ),
                 if (_viewModel.errorMessage != null)
                   Padding(
